@@ -1,0 +1,88 @@
+name: Обновить расписание
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"   # каждые 3 часа (по UTC)
+  workflow_dispatch:         # кнопка «Run workflow» во вкладке Actions
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-schedule
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE_HOST: lk.tolgas.ru
+      # Задай ОДИН из секретов в Settings → Secrets and variables → Actions:
+      WG_CONFIG: ${{ secrets.WG_CONFIG }}       # содержимое .conf файла WireGuard
+      OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}   # содержимое .ovpn файла OpenVPN
+      OVPN_AUTH: ${{ secrets.OVPN_AUTH }}       # (необязательно) логин и пароль OpenVPN, на двух строках
+      PROXY_URL: ${{ secrets.PROXY_URL }}       # http://user:pass@host:port — HTTP-прокси с российским IP
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Узнать IP сайта
+        run: |
+          IP=$(getent ahostsv4 "$SITE_HOST" | awk 'NR==1{print $1}')
+          echo "SITE_IP=$IP" >> "$GITHUB_ENV"
+          echo "$SITE_HOST -> $IP"
+
+      - name: Подключить WireGuard (только трафик к сайту)
+        if: env.WG_CONFIG != ''
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq wireguard-tools
+          printf '%s\n' "$WG_CONFIG" > wg0.conf
+          # пускаем через VPN только сайт расписания, остальное (GitHub) — напрямую
+          sed -i -E "s|^\s*AllowedIPs\s*=.*|AllowedIPs = ${SITE_IP}/32|I; /^\s*DNS\s*=/Id" wg0.conf
+          sudo install -m 600 wg0.conf /etc/wireguard/wg0.conf && rm wg0.conf
+          sudo wg-quick up wg0
+
+      - name: Подключить OpenVPN (только трафик к сайту)
+        if: env.WG_CONFIG == '' && env.OVPN_CONFIG != ''
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq openvpn
+          printf '%s\n' "$OVPN_CONFIG" > vpn.ovpn
+          EXTRA=""
+          if [ -n "$OVPN_AUTH" ]; then printf '%s\n' "$OVPN_AUTH" > auth.txt; chmod 600 auth.txt; EXTRA="--auth-user-pass auth.txt"; fi
+          sudo openvpn --config vpn.ovpn $EXTRA --route-nopull --route "$SITE_IP" 255.255.255.255 --daemon --log ovpn.log
+          for i in $(seq 1 30); do grep -q "Initialization Sequence Completed" ovpn.log 2>/dev/null && break; sleep 2; done
+          sudo tail -n 20 ovpn.log | grep -vi auth || true
+          rm -f vpn.ovpn
+
+      - name: Настроить прокси
+        if: env.WG_CONFIG == '' && env.OVPN_CONFIG == '' && env.PROXY_URL != ''
+        run: echo "HTTPS_PROXY=$PROXY_URL" >> "$GITHUB_ENV"
+
+      - name: Проверить доступ к сайту
+        run: |
+          code=$(curl -sS -m 40 -o /dev/null -w "%{http_code}" https://$SITE_HOST/public-schedule/search/ || true)
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then echo "::error::Сайт $SITE_HOST недоступен (HTTP $code). Проверь VPN/прокси."; exit 1; fi
+
+      - name: Скачать расписание
+        run: python scripts/fetch.py
+
+      - name: Сохранить изменения
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then echo "Без изменений"; exit 0; fi
+          git commit -m "Обновить расписание $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push
+
+      - name: Отключить VPN
+        if: always()
+        run: |
+          sudo wg-quick down wg0 2>/dev/null || true
+          sudo pkill openvpn 2>/dev/null || true
+          rm -f auth.txt

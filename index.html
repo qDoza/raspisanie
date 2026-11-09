@@ -101,6 +101,10 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + 
 .chip.lec{color:var(--lec);background:var(--lec-bg)}
 .chip.prac{color:var(--prac);background:var(--prac-bg)}
 .chip.lab{color:var(--lab);background:var(--lab-bg)}
+.chip.cons,.chip.other{color:var(--muted);background:var(--border)}
+.chip.exam{color:var(--now);background:color-mix(in srgb,var(--now) 14%,transparent)}
+.note{font-size:12.5px;color:var(--muted);margin-top:6px}
+.skeleton{height:92px;border-radius:16px;background:var(--surface);border:1px solid var(--border);animation:pulse 1.4s infinite}
 .badge-now{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--now);margin-left:6px}
 .badge-now::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--now);animation:pulse 1.4s infinite}
 @keyframes pulse{50%{opacity:.3}}
@@ -170,7 +174,7 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + 
   <div class="day-title"><h2 id="dayTitle"></h2><span id="dayCount"></span></div>
   <div class="list" id="list"></div>
 
-  <p class="demo-note">Демо-данные: пары сгенерированы для примера.<br>Листай влево-вправо, чтобы переключать дни.</p>
+  <p class="demo-note"><span id="updated"></span><br>Листай влево-вправо, чтобы переключать дни.</p>
 </div>
 
 <div class="overlay" id="overlay"></div>
@@ -179,7 +183,7 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + 
   <h3>Выберите группу</h3>
   <div class="search">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input id="q" placeholder="Например, АИУС23" autocomplete="off">
+    <input id="q" placeholder="Например, СПИС241" autocomplete="off">
   </div>
   <div class="filters" id="filters"></div>
   <div class="groups" id="groups"></div>
@@ -187,11 +191,11 @@ header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + 
 <div class="toast" id="toast"></div>
 
 <script>
-const GROUPS = ["АИУС23","АИУС23и","АММЭ23","АММЭ24","АММЭ24и","АММЭ25","АРЭ23","АРЭ24","АРЭ24и","АРЭ24пр","АРЭ25","АСА23","АСА24","АСА25","АТД23","АТД24","АТД25","АТИК23","АТИК24","АТИК25","АФ23","АФ24","АФ25","АЭКС23","АЭКС25","БГД23","БГМУ23","БГМУ24","БД23","БДП24","БДП25","БИКТ231","БИКТ232","БИКТ241","БИКТ242","БИКТ251","БИКТ252","БИС23","БИС24","БИС25","БОЗИ23","БОЗИ24","БОЗИ25","БПИ25","БРБ24","БРБ25","БС25","БСО24","БСО25"];
-const BELLS = [["08:30","10:00"],["10:10","11:40"],["12:10","13:40"],["13:50","15:20"],["15:30","17:00"],["17:10","18:40"]];
-const SUBJ = ["Математика","Информатика","Иностранный язык","Физическая культура","История России","Основы алгоритмизации и программирования","Компьютерные сети","Базы данных","Электротехника","Инженерная графика","Операционные системы","Русский язык и культура речи","Экономика организации","Безопасность жизнедеятельности"];
-const TEACH = ["Иванова Е. А.","Петров С. В.","Смирнова О. Н.","Кузнецов А. Д.","Соколова М. И.","Новиков Д. П.","Морозова Т. Г."];
-const TYPES = [["lec","Лекция"],["prac","Практика"],["lab","Лабораторная"]];
+// Группы колледжа (СПО) с lk.tolgas.ru/public-schedule
+const GROUPS = ["СПБС25","СПБС26","СПБУ26","СПБУз23","СПБУз24","СПБУз24с","СПБУз25","СПБУз25с","СПБУз26","СПБУз26с","СПД23","СПДГ231","СПДГ232","СПДГ24","СПДГ25","СПДГ26","СПДГ26с","СПИС231","СПИС232","СПИС241","СПИС242","СПИС24с","СПИС251","СПИС252","СПИС25с","СПИСоз22","СПИСоз23","СПИСоз23с","СПКС23","СПКС24","СПКС25","СПКС26","СПКТ26","СПНА26с","СПП24","СПП25","СПП25с","СПП26","СПП26с","СППз23","СППз25","СППз26","СППз26с","СППО261","СППО262","СППО263","СПСА23","СПСА24","СПСА25","СПСА26","СПСА26с","СПТР24","СПТР251","СПТР252","СПТР25с","СПТР261","СПТР262","СПТР26с","СПТРз23","СПТРз24с","СПУК24","СПУК25","СПУК26"];
+// Звонки ПВГУС (по таблице на сайте расписания)
+const BELLS = [["08:30","10:05"],["10:15","11:50"],["12:35","14:10"],["14:20","15:55"],["16:05","17:35"],["17:45","19:20"],["19:30","21:05"]];
+const TYPE_LABEL = {lec:"Лекция",prac:"Практика",lab:"Лабораторная",cons:"Консультация",exam:"Экзамен",other:"Занятие"};
 const DOW = ["Пн","Вт","Ср","Чт","Пт","Сб"];
 const DOW_FULL = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
 const MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
@@ -199,18 +203,26 @@ const MONTHS = ["января","февраля","марта","апреля","м�
 const $ = id => document.getElementById(id);
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
 
-// детерминированный «рандом» по строке — одинаковое демо-расписание для группы
-function rng(seed){let h=2166136261;for(const c of seed)h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);return((h^=h>>>16)>>>0)/4294967296}}
-function lessonsFor(group, date){
-  const r = rng(group + date.toDateString());
-  const start = r()<.25 ? 1 : 0, count = 2 + Math.floor(r()*3);
-  const out=[];
-  for(let i=start;i<Math.min(start+count,BELLS.length);i++){
-    const t = TYPES[Math.floor(r()*3)];
-    out.push({n:i+1, bell:BELLS[i], subj:SUBJ[Math.floor(r()*SUBJ.length)], type:t, teacher:TEACH[Math.floor(r()*TEACH.length)], room:(1+Math.floor(r()*5))+"-"+(100+Math.floor(r()*30)+ (Math.floor(r()*4))*100), sub: r()<.15 ? "п/г "+(1+Math.floor(r()*2)) : ""});
-  }
-  return out;
+// ---- данные: data/<группа>.json (обновляются GitHub Actions) ----
+const cache = {};
+async function loadGroup(g){
+  if (g in cache) return cache[g];
+  try {
+    const r = await fetch("data/" + encodeURIComponent(g) + ".json", {cache: "no-cache"});
+    cache[g] = r.ok ? await r.json() : null;
+  } catch (e) { cache[g] = null; }
+  return cache[g];
 }
+function lessonsFor(group, date){
+  const d = cache[group];
+  return (d && d.days[fmtISO(date)]) || [];
+}
+function inRange(group, date){
+  const d = cache[group], s = fmtISO(date);
+  return !!d && s >= d.from && s <= d.to;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shortName(fio){ const p=fio.split(/\s+/); return p.length>=3 ? `${p[0]} ${p[1][0]}. ${p[2][0]}.` : fio; }
 
 const today = new Date(); today.setHours(0,0,0,0);
 function mondayOf(d){const x=new Date(d);const w=(x.getDay()+6)%7;x.setDate(x.getDate()-w);return x}
@@ -232,8 +244,9 @@ function render(){
   $("groupName").textContent = state.group;
   const ws = state.weekStart, we = new Date(ws); we.setDate(we.getDate()+5);
   $("weekLabel").textContent = ws.getDate()+" "+(ws.getMonth()!==we.getMonth()?MONTHS[ws.getMonth()]+" ":"")+"– "+we.getDate()+" "+MONTHS[we.getMonth()];
-  const wn = Math.round((ws - mondayOf(new Date(today.getFullYear(),8,1)))/6048e5)+1;
-  $("weekType").textContent = "· "+(wn%2?"числитель":"знаменатель");
+  $("weekType").textContent = +ws===+mondayOf(today) ? "· эта неделя" : "";
+  const data = cache[state.group];
+  $("updated").textContent = data ? "Расписание с lk.tolgas.ru · обновлено на сайте " + (data.siteUpdated || "—") : "";
 
   $("days").innerHTML = DOW.map((d,i)=>{
     const dt=new Date(ws);dt.setDate(dt.getDate()+i);
@@ -249,23 +262,27 @@ function render(){
 
   const now=new Date(), mins=now.getHours()*60+now.getMinutes();
   const toM=s=>{const[h,m]=s.split(":");return h*60+ +m};
+  let emptyMsg = `<div class="empty"><div>🎉</div>Пар нет — можно отдыхать</div>`;
+  if (!(state.group in cache)) emptyMsg = `<div class="skeleton"></div><div class="skeleton"></div>`;
+  else if (data === null) emptyMsg = `<div class="empty"><div>📭</div>Расписание группы ${esc(state.group)} пока не загружено.<br>Попробуй позже или выбери другую группу.</div>`;
+  else if (!inRange(state.group, cur)) emptyMsg = `<div class="empty"><div>🗓️</div>На эти даты расписания пока нет</div>`;
   $("list").innerHTML = ls.length ? ls.map((l,idx)=>{
-    const s=toM(l.bell[0]), e=toM(l.bell[1]);
+    const s=toM(l.start), e=toM(l.end);
     const live = isToday && mins>=s && mins<e;
     const gap = idx>0 && l.n-ls[idx-1].n>1 ? `<div class="break">окно</div>` : "";
     return gap+`<article class="lesson ${live?"now":""}">
-      <div class="time"><div class="n">${l.n} пара</div><div class="s">${l.bell[0]}</div><div class="e">${l.bell[1]}</div></div>
+      <div class="time"><div class="n">${l.n} пара</div><div class="s">${l.start}</div><div class="e">${l.end}</div></div>
       <div class="body">
-        <span class="chip ${l.type[0]}">${l.type[1]}</span>${live?'<span class="badge-now">Идёт сейчас</span>':""}
-        <div class="subj">${l.subj}</div>
+        <span class="chip ${esc(l.type)}" title="${esc(l.typeLabel||"")}">${TYPE_LABEL[l.type]||esc(l.typeLabel)}</span>${live?'<span class="badge-now">Идёт сейчас</span>':""}
+        <div class="subj">${esc(l.title)}</div>
         <div class="meta">
-          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>${l.teacher}</span>
-          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>ауд. ${l.room}</span>
-          ${l.sub?`<span>${l.sub}</span>`:""}
+          ${l.teacher?`<span title="${esc(l.teacher)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>${esc(shortName(l.teacher))}</span>`:""}
+          ${l.room?`<span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>ауд. ${esc(l.room)}</span>`:""}
         </div>
+        ${l.note?`<div class="note">${esc(l.note)}</div>`:""}
         ${live?`<div class="progress"><i style="width:${Math.round((mins-s)/(e-s)*100)}%"></i></div>`:""}
       </div></article>`;
-  }).join("") : `<div class="empty"><div>🎉</div>Пар нет — можно отдыхать</div>`;
+  }).join("") : emptyMsg;
   writeHash();
 }
 
@@ -287,7 +304,7 @@ function closeSheet(){$("sheet").classList.remove("open");$("overlay").classList
 function pick(g){
   state.group=g; store.set("group",g);
   const r=[g,...(store.get("recent")||"").split(",").filter(x=>x&&x!==g)].slice(0,4); store.set("recent",r.join(","));
-  closeSheet(); render();
+  closeSheet(); render(); loadGroup(g).then(render);
 }
 
 $("groupBtn").onclick=openSheet;
@@ -301,7 +318,7 @@ $("nextW").onclick=()=>{state.weekStart.setDate(state.weekStart.getDate()+7);ren
 $("themeBtn").onclick=()=>{const dark=matchMedia("(prefers-color-scheme: dark)").matches;const cur=document.documentElement.dataset.theme||(dark?"dark":"light");const next=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=next;store.set("theme",next)};
 $("shareBtn").onclick=async()=>{try{if(navigator.share){await navigator.share({title:"Расписание "+state.group,url:location.href})}else{await navigator.clipboard.writeText(location.href);toast("Ссылка скопирована")}}catch(e){}};
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
-window.addEventListener("hashchange",()=>{readHash();render()});
+window.addEventListener("hashchange",()=>{readHash();render();loadGroup(state.group).then(render)});
 
 // ---- свайп по дням ----
 function shiftDay(dir){
@@ -335,9 +352,10 @@ addEventListener("online",setOnline);addEventListener("offline",setOnline);setOn
 if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
 const th=store.get("theme"); if(th) document.documentElement.dataset.theme=th;
-state.group = store.get("group") || "АИУС23";
+state.group = GROUPS.includes(store.get("group")) ? store.get("group") : "СПКС24";
 readHash();
 render();
+loadGroup(state.group).then(render);
 if(!store.get("group") && !location.hash.includes("/")) setTimeout(openSheet,400);
 </script>
 </body>
