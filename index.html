@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>Расписание ПВГУС</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Расписание">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f5fb; --surface:#ffffff; --surface-2:#eef0f8; --text:#151826; --muted:#6b7084;
+  --border:#e3e5ef; --primary:#4f46e5; --primary-soft:#e8e7ff; --on-primary:#fff;
+  --lec:#2563eb; --lec-bg:#e5eeff; --prac:#059669; --prac-bg:#dcf5ec; --lab:#c2410c; --lab-bg:#ffead9;
+  --now:#e11d48; --shadow:0 1px 2px rgba(20,24,40,.05),0 6px 20px rgba(20,24,40,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1018; --surface:#171a26; --surface-2:#20243300; --text:#eceef6; --muted:#9aa0b5;
+    --border:#272b3b; --primary:#8b85ff; --primary-soft:#262448; --on-primary:#0e1018;
+    --lec:#7aa7ff; --lec-bg:#1b2643; --prac:#4fd1a5; --prac-bg:#16302a; --lab:#ff9a62; --lab-bg:#3a2417;
+    --now:#ff5c7f; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1018; --surface:#171a26; --surface-2:#202433; --text:#eceef6; --muted:#9aa0b5;
+  --border:#272b3b; --primary:#8b85ff; --primary-soft:#262448; --on-primary:#0e1018;
+  --lec:#7aa7ff; --lec-bg:#1b2643; --prac:#4fd1a5; --prac-bg:#16302a; --lab:#ff9a62; --lab-bg:#3a2417;
+  --now:#ff5c7f; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:active{transform:scale(.97)}
+.app{max-width:560px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));min-height:100vh;min-height:100dvh}
+
+/* header */
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(14px + env(safe-area-inset-top)) 0 10px}
+#list{transition:transform .18s ease,opacity .18s ease}
+#list.out-l{transform:translateX(-24px);opacity:0}
+#list.out-r{transform:translateX(24px);opacity:0}
+.install{display:none;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--primary-soft);color:var(--text)}
+.install.show{display:flex}
+.install img{width:36px;height:36px;border-radius:9px}
+.install div{flex:1;font-size:13px;line-height:1.35}
+.install b{display:block;font-size:14px}
+.install button{border:0;background:var(--primary);color:var(--on-primary);border-radius:10px;padding:8px 12px;font-weight:600;font-size:13px}
+.install .x{background:transparent;color:var(--muted);padding:6px}
+.offline{display:none;margin-top:10px;font-size:12.5px;color:var(--muted);text-align:center}
+.offline.show{display:block}
+.top{display:flex;align-items:center;gap:10px}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;font-weight:800;font-size:15px}
+.title{flex:1;min-width:0}
+.title b{display:block;font-size:17px}
+.title span{font-size:12.5px;color:var(--muted)}
+.icon-btn{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:grid;place-items:center}
+.group-btn{margin-top:12px;width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow);text-align:left}
+.group-btn .lbl{font-size:12px;color:var(--muted)}
+.group-btn .val{font-size:18px;font-weight:700}
+.group-btn .chev{margin-left:auto;color:var(--muted)}
+
+/* week strip */
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px}
+.week-nav b{font-size:14px}
+.week-nav small{color:var(--muted);margin-left:6px;font-size:12px}
+.arrows{display:flex;gap:6px}
+.arrows button{width:32px;height:32px;border-radius:10px;border:1px solid var(--border);background:var(--surface)}
+.days{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.day{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:8px 0;text-align:center}
+.day .dw{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.day .dn{font-size:17px;font-weight:700;margin-top:2px}
+.day .dots{height:6px;display:flex;justify-content:center;gap:2px;margin-top:4px}
+.day .dots i{width:4px;height:4px;border-radius:50%;background:var(--muted);opacity:.5}
+.day.today .dn{color:var(--primary)}
+.day.active{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.day.active .dw{color:inherit;opacity:.8}
+.day.active .dn{color:inherit}
+.day.active .dots i{background:currentColor;opacity:.8}
+
+/* lessons */
+.day-title{margin:20px 2px 10px;display:flex;align-items:baseline;justify-content:space-between}
+.day-title h2{margin:0;font-size:20px}
+.day-title span{font-size:13px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:10px}
+.lesson{display:grid;grid-template-columns:64px 1fr;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:relative}
+.lesson.now{border-color:var(--now);box-shadow:0 0 0 1px var(--now),var(--shadow)}
+.time{border-right:1px solid var(--border);padding-right:10px}
+.time .n{font-size:11px;color:var(--muted);font-weight:600}
+.time .s{font-size:16px;font-weight:700;margin-top:2px}
+.time .e{font-size:13px;color:var(--muted)}
+.body{min-width:0}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px}
+.chip.lec{color:var(--lec);background:var(--lec-bg)}
+.chip.prac{color:var(--prac);background:var(--prac-bg)}
+.chip.lab{color:var(--lab);background:var(--lab-bg)}
+.badge-now{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:var(--now);margin-left:6px}
+.badge-now::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--now);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.subj{font-weight:600;font-size:15.5px;line-height:1.3;margin:7px 0 8px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+.progress{height:4px;border-radius:4px;background:var(--border);margin-top:10px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--now)}
+.break{font-size:12px;color:var(--muted);text-align:center;padding:2px 0}
+.empty{text-align:center;padding:48px 16px;color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:16px}
+.empty div{font-size:36px;margin-bottom:6px}
+
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(10,12,20,.45);opacity:0;pointer-events:none;transition:.2s;z-index:10}
+.overlay.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;height:82vh;background:var(--surface);border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .25s ease;z-index:11;display:flex;flex-direction:column}
+.sheet.open{transform:none}
+.grab{width:40px;height:5px;border-radius:5px;background:var(--border);margin:10px auto 6px}
+.sheet h3{margin:4px 16px 10px;font-size:18px}
+.search{margin:0 16px;display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:0 12px}
+.search input{flex:1;border:0;background:transparent;color:var(--text);font:inherit;font-size:16px;padding:11px 0;outline:none}
+.filters{display:flex;gap:6px;overflow-x:auto;padding:10px 16px 4px;scrollbar-width:none}
+.filters button{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px}
+.filters button.on{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.groups{flex:1;overflow-y:auto;padding:8px 16px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;align-content:start}
+.groups button{border:1px solid var(--border);background:var(--bg);border-radius:12px;padding:12px 8px;font-weight:600;font-size:14px}
+.groups button.sel{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+.sec{grid-column:1/-1;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+
+.demo-note{margin-top:22px;font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(80px);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;transition:.25s;z-index:20}
+.toast.show{transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <div class="logo">ПВ</div>
+      <div class="title"><b>Расписание</b><span>Колледж ПВГУС · Тольятти</span></div>
+      <button class="icon-btn" id="themeBtn" aria-label="Тема">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button class="icon-btn" id="shareBtn" aria-label="Поделиться">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
+      </button>
+    </div>
+    <button class="group-btn" id="groupBtn">
+      <div><div class="lbl">Группа</div><div class="val" id="groupName">—</div></div>
+      <span class="chev">Сменить ▾</span>
+    </button>
+    <div class="week-nav">
+      <div><b id="weekLabel"></b><small id="weekType"></small></div>
+      <div class="arrows"><button id="prevW" aria-label="Пред. неделя">‹</button><button id="nextW" aria-label="След. неделя">›</button></div>
+    </div>
+    <div class="days" id="days"></div>
+    <div class="offline" id="offline">Нет интернета — показано сохранённое расписание</div>
+  </header>
+
+  <div class="install" id="install">
+    <img src="icons/icon-192.png" alt="">
+    <div><b>Установить приложение</b><span id="installText">Откроется с главного экрана и без интернета</span></div>
+    <button id="installBtn">Установить</button>
+    <button class="x" id="installClose" aria-label="Скрыть">✕</button>
+  </div>
+
+  <div class="day-title"><h2 id="dayTitle"></h2><span id="dayCount"></span></div>
+  <div class="list" id="list"></div>
+
+  <p class="demo-note">Демо-данные: пары сгенерированы для примера.<br>Листай влево-вправо, чтобы переключать дни.</p>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Выбор группы">
+  <div class="grab"></div>
+  <h3>Выберите группу</h3>
+  <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted)"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" placeholder="Например, АИУС23" autocomplete="off">
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="groups" id="groups"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const GROUPS = ["АИУС23","АИУС23и","АММЭ23","АММЭ24","АММЭ24и","АММЭ25","АРЭ23","АРЭ24","АРЭ24и","АРЭ24пр","АРЭ25","АСА23","АСА24","АСА25","АТД23","АТД24","АТД25","АТИК23","АТИК24","АТИК25","АФ23","АФ24","АФ25","АЭКС23","АЭКС25","БГД23","БГМУ23","БГМУ24","БД23","БДП24","БДП25","БИКТ231","БИКТ232","БИКТ241","БИКТ242","БИКТ251","БИКТ252","БИС23","БИС24","БИС25","БОЗИ23","БОЗИ24","БОЗИ25","БПИ25","БРБ24","БРБ25","БС25","БСО24","БСО25"];
+const BELLS = [["08:30","10:00"],["10:10","11:40"],["12:10","13:40"],["13:50","15:20"],["15:30","17:00"],["17:10","18:40"]];
+const SUBJ = ["Математика","Информатика","Иностранный язык","Физическая культура","История России","Основы алгоритмизации и программирования","Компьютерные сети","Базы данных","Электротехника","Инженерная графика","Операционные системы","Русский язык и культура речи","Экономика организации","Безопасность жизнедеятельности"];
+const TEACH = ["Иванова Е. А.","Петров С. В.","Смирнова О. Н.","Кузнецов А. Д.","Соколова М. И.","Новиков Д. П.","Морозова Т. Г."];
+const TYPES = [["lec","Лекция"],["prac","Практика"],["lab","Лабораторная"]];
+const DOW = ["Пн","Вт","Ср","Чт","Пт","Сб"];
+const DOW_FULL = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"];
+const MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+
+const $ = id => document.getElementById(id);
+const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+
+// детерминированный «рандом» по строке — одинаковое демо-расписание для группы
+function rng(seed){let h=2166136261;for(const c of seed)h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);return((h^=h>>>16)>>>0)/4294967296}}
+function lessonsFor(group, date){
+  const r = rng(group + date.toDateString());
+  const start = r()<.25 ? 1 : 0, count = 2 + Math.floor(r()*3);
+  const out=[];
+  for(let i=start;i<Math.min(start+count,BELLS.length);i++){
+    const t = TYPES[Math.floor(r()*3)];
+    out.push({n:i+1, bell:BELLS[i], subj:SUBJ[Math.floor(r()*SUBJ.length)], type:t, teacher:TEACH[Math.floor(r()*TEACH.length)], room:(1+Math.floor(r()*5))+"-"+(100+Math.floor(r()*30)+ (Math.floor(r()*4))*100), sub: r()<.15 ? "п/г "+(1+Math.floor(r()*2)) : ""});
+  }
+  return out;
+}
+
+const today = new Date(); today.setHours(0,0,0,0);
+function mondayOf(d){const x=new Date(d);const w=(x.getDay()+6)%7;x.setDate(x.getDate()-w);return x}
+let state = { group: null, weekStart: mondayOf(today), day: Math.min((today.getDay()+6)%7,5) };
+
+// ---- хеш-роутинг: #/АИУС23/2026-11-10 ----
+function fmtISO(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function readHash(){
+  const [, g, d] = decodeURIComponent(location.hash).split("/");
+  if(g && GROUPS.includes(g)) state.group = g;
+  if(d && /^\d{4}-\d\d-\d\d$/.test(d)){const dt=new Date(d+"T00:00");state.weekStart=mondayOf(dt);state.day=Math.min((dt.getDay()+6)%7,5)}
+}
+function writeHash(){
+  const d=new Date(state.weekStart);d.setDate(d.getDate()+state.day);
+  history.replaceState(null,"","#/"+encodeURIComponent(state.group)+"/"+fmtISO(d));
+}
+
+function render(){
+  $("groupName").textContent = state.group;
+  const ws = state.weekStart, we = new Date(ws); we.setDate(we.getDate()+5);
+  $("weekLabel").textContent = ws.getDate()+" "+(ws.getMonth()!==we.getMonth()?MONTHS[ws.getMonth()]+" ":"")+"– "+we.getDate()+" "+MONTHS[we.getMonth()];
+  const wn = Math.round((ws - mondayOf(new Date(today.getFullYear(),8,1)))/6048e5)+1;
+  $("weekType").textContent = "· "+(wn%2?"числитель":"знаменатель");
+
+  $("days").innerHTML = DOW.map((d,i)=>{
+    const dt=new Date(ws);dt.setDate(dt.getDate()+i);
+    const n=lessonsFor(state.group,dt).length;
+    return `<button class="day ${i===state.day?"active":""} ${+dt===+today?"today":""}" data-i="${i}"><div class="dw">${d}</div><div class="dn">${dt.getDate()}</div><div class="dots">${"<i></i>".repeat(n)}</div></button>`;
+  }).join("");
+
+  const cur=new Date(ws);cur.setDate(cur.getDate()+state.day);
+  const isToday = +cur===+today;
+  $("dayTitle").textContent = (isToday?"Сегодня, ":"")+DOW_FULL[state.day].toLowerCase().replace(/^./,c=>isToday?c:c.toUpperCase());
+  const ls = lessonsFor(state.group,cur);
+  $("dayCount").textContent = cur.getDate()+" "+MONTHS[cur.getMonth()]+" · "+ls.length+" "+(ls.length===1?"пара":ls.length<5?"пары":"пар");
+
+  const now=new Date(), mins=now.getHours()*60+now.getMinutes();
+  const toM=s=>{const[h,m]=s.split(":");return h*60+ +m};
+  $("list").innerHTML = ls.length ? ls.map((l,idx)=>{
+    const s=toM(l.bell[0]), e=toM(l.bell[1]);
+    const live = isToday && mins>=s && mins<e;
+    const gap = idx>0 && l.n-ls[idx-1].n>1 ? `<div class="break">окно</div>` : "";
+    return gap+`<article class="lesson ${live?"now":""}">
+      <div class="time"><div class="n">${l.n} пара</div><div class="s">${l.bell[0]}</div><div class="e">${l.bell[1]}</div></div>
+      <div class="body">
+        <span class="chip ${l.type[0]}">${l.type[1]}</span>${live?'<span class="badge-now">Идёт сейчас</span>':""}
+        <div class="subj">${l.subj}</div>
+        <div class="meta">
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>${l.teacher}</span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>ауд. ${l.room}</span>
+          ${l.sub?`<span>${l.sub}</span>`:""}
+        </div>
+        ${live?`<div class="progress"><i style="width:${Math.round((mins-s)/(e-s)*100)}%"></i></div>`:""}
+      </div></article>`;
+  }).join("") : `<div class="empty"><div>🎉</div>Пар нет — можно отдыхать</div>`;
+  writeHash();
+}
+
+// ---- выбор группы ----
+const PREFIXES = ["Все", ...new Set(GROUPS.map(g=>g.match(/^[А-ЯЁ]+/)[0]))];
+let filter="Все";
+function renderGroups(){
+  const q=$("q").value.trim().toUpperCase();
+  const list=GROUPS.filter(g=>(filter==="Все"||g.match(/^[А-ЯЁ]+/)[0]===filter)&&g.toUpperCase().includes(q));
+  const recent=(store.get("recent")||"").split(",").filter(g=>GROUPS.includes(g));
+  let html="";
+  if(!q&&filter==="Все"&&recent.length) html+=`<div class="sec">Недавние</div>`+recent.map(g=>`<button data-g="${g}" class="${g===state.group?"sel":""}">${g}</button>`).join("")+`<div class="sec">Все группы</div>`;
+  html+=list.map(g=>`<button data-g="${g}" class="${g===state.group?"sel":""}">${g}</button>`).join("")||`<div class="sec">Ничего не найдено</div>`;
+  $("groups").innerHTML=html;
+  $("filters").innerHTML=PREFIXES.map(p=>`<button class="${p===filter?"on":""}" data-p="${p}">${p}</button>`).join("");
+}
+function openSheet(){renderGroups();$("sheet").classList.add("open");$("overlay").classList.add("open");setTimeout(()=>$("q").focus(),250)}
+function closeSheet(){$("sheet").classList.remove("open");$("overlay").classList.remove("open")}
+function pick(g){
+  state.group=g; store.set("group",g);
+  const r=[g,...(store.get("recent")||"").split(",").filter(x=>x&&x!==g)].slice(0,4); store.set("recent",r.join(","));
+  closeSheet(); render();
+}
+
+$("groupBtn").onclick=openSheet;
+$("overlay").onclick=closeSheet;
+$("q").oninput=renderGroups;
+$("filters").onclick=e=>{const p=e.target.dataset.p;if(p){filter=p;renderGroups()}};
+$("groups").onclick=e=>{const g=e.target.dataset.g;if(g)pick(g)};
+$("days").onclick=e=>{const b=e.target.closest(".day");if(b){state.day=+b.dataset.i;render()}};
+$("prevW").onclick=()=>{state.weekStart.setDate(state.weekStart.getDate()-7);render()};
+$("nextW").onclick=()=>{state.weekStart.setDate(state.weekStart.getDate()+7);render()};
+$("themeBtn").onclick=()=>{const dark=matchMedia("(prefers-color-scheme: dark)").matches;const cur=document.documentElement.dataset.theme||(dark?"dark":"light");const next=cur==="dark"?"light":"dark";document.documentElement.dataset.theme=next;store.set("theme",next)};
+$("shareBtn").onclick=async()=>{try{if(navigator.share){await navigator.share({title:"Расписание "+state.group,url:location.href})}else{await navigator.clipboard.writeText(location.href);toast("Ссылка скопирована")}}catch(e){}};
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+window.addEventListener("hashchange",()=>{readHash();render()});
+
+// ---- свайп по дням ----
+function shiftDay(dir){
+  let d=state.day+dir;
+  if(d<0){d=5;state.weekStart.setDate(state.weekStart.getDate()-7)}
+  if(d>5){d=0;state.weekStart.setDate(state.weekStart.getDate()+7)}
+  state.day=d;
+  const l=$("list"); l.classList.add(dir>0?"out-l":"out-r");
+  setTimeout(()=>{render();l.classList.remove("out-l","out-r")},150);
+}
+let sx=0,sy=0,st=0;
+document.addEventListener("touchstart",e=>{if($("sheet").classList.contains("open"))return;const t=e.touches[0];sx=t.clientX;sy=t.clientY;st=Date.now()},{passive:true});
+document.addEventListener("touchend",e=>{if(!st)return;const t=e.changedTouches[0],dx=t.clientX-sx,dy=t.clientY-sy;st=0;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5)shiftDay(dx<0?1:-1)},{passive:true});
+
+// ---- установка на главный экран ----
+let deferred=null;
+const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;if(!store.get("installHidden"))$("install").classList.add("show")});
+if(isIOS&&!standalone&&!store.get("installHidden")){
+  $("installText").textContent="Нажми «Поделиться» → «На экран Домой»";
+  $("installBtn").style.display="none";
+  $("install").classList.add("show");
+}
+$("installBtn").onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;$("install").classList.remove("show")};
+$("installClose").onclick=()=>{store.set("installHidden","1");$("install").classList.remove("show")};
+
+// ---- офлайн ----
+const setOnline=()=>$("offline").classList.toggle("show",!navigator.onLine);
+addEventListener("online",setOnline);addEventListener("offline",setOnline);setOnline();
+if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+const th=store.get("theme"); if(th) document.documentElement.dataset.theme=th;
+state.group = store.get("group") || "АИУС23";
+readHash();
+render();
+if(!store.get("group") && !location.hash.includes("/")) setTimeout(openSheet,400);
+</script>
+</body>
+</html>
