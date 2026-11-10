@@ -206,6 +206,29 @@ body.sheet-open .sheet{transform:none}
 .toast button{color:var(--blue);font-weight:600}
 .foot{text-align:center;font-size:12px;color:var(--t3);margin-top:26px;line-height:1.5}
 
+/* ---------- экран ключа доступа ---------- */
+.lock{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px max(16px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));transition:opacity .5s var(--ease),transform .6s var(--ease)}
+.lock[hidden]{display:none}
+.lock.bye{opacity:0;transform:scale(1.06);pointer-events:none}
+body.locked #app,body.locked .dock{filter:blur(18px);opacity:.35;pointer-events:none}
+#app,.dock{transition:filter .6s var(--ease),opacity .6s var(--ease)}
+.lk-card{width:100%;max-width:380px;border-radius:32px;padding:28px 22px 22px;text-align:center;animation:rise .8s var(--spring) backwards}
+.lk-icon{width:72px;height:72px;margin:0 auto 14px;border-radius:20px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,#5e5ce6,#007aff);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 24px rgba(0,122,255,.35)}
+.lk-icon svg{width:34px;height:34px}
+.lk-card h2{margin:0;font-size:24px;font-weight:700}
+.lk-card p{margin:6px 0 20px;color:var(--t2);font-size:15px;line-height:1.4}
+.lk-in{width:100%;height:54px;border-radius:16px;border:0;outline:none;background:var(--fill);color:var(--t);font:inherit;font-size:20px;font-weight:600;letter-spacing:.12em;text-align:center;text-transform:uppercase;-webkit-user-select:text;user-select:text;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .3s}
+.lk-in:focus{box-shadow:inset 0 0 0 2px var(--blue)}
+.lk-in::placeholder{color:var(--t3);letter-spacing:.08em;font-weight:500}
+.lk-err{height:20px;margin:8px 0 6px;font-size:14px;color:var(--red);opacity:0;transition:opacity .25s}
+.lk-err.on{opacity:1}
+.lk-btn{width:100%;height:52px;border-radius:16px;background:var(--blue);color:#fff;font-size:17px;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px color-mix(in srgb,var(--blue) 35%,transparent)}
+.lk-btn:disabled{opacity:.5}
+.lk-hint{margin-top:14px;font-size:13px;color:var(--t3)}
+.shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
+.lk-ok .lk-icon{background:linear-gradient(145deg,#34c759,#30b0c7);transition:background .4s}
+
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -266,6 +289,19 @@ body.sheet-open .sheet{transform:none}
 
 <div class="toast glass" id="toast"></div>
 
+<div class="lock" id="lock" hidden>
+  <form class="lk-card glass" id="lkForm" autocomplete="off">
+    <div class="lk-icon" id="lkIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/></svg></div>
+    <h2>Ключ доступа</h2>
+    <p>Введи ключ, который тебе выдали, чтобы открыть расписание</p>
+    <input class="lk-in" id="lkIn" placeholder="XXXX-XXXX-XXXX" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" maxlength="40">
+    <div class="lk-err" id="lkErr">Неверный ключ</div>
+    <button class="lk-btn press" id="lkBtn" type="submit">Открыть</button>
+    <div class="lk-hint">Нет ключа? Напиши автору приложения</div>
+  </form>
+</div>
+
+<script src="access.js"></script>
 <script>
 // Группы колледжа (СПО) с lk.tolgas.ru/public-schedule
 const GROUPS = ["СПБС25","СПБС26","СПБУ26","СПБУз23","СПБУз24","СПБУз24с","СПБУз25","СПБУз25с","СПБУз26","СПБУз26с","СПД23","СПДГ231","СПДГ232","СПДГ24","СПДГ25","СПДГ26","СПДГ26с","СПИС231","СПИС232","СПИС241","СПИС242","СПИС24с","СПИС251","СПИС252","СПИС25с","СПИСоз22","СПИСоз23","СПИСоз23с","СПКС23","СПКС24","СПКС25","СПКС26","СПКТ26","СПНА26с","СПП24","СПП25","СПП25с","СПП26","СПП26с","СППз23","СППз25","СППз26","СППз26с","СППО261","СППО262","СППО263","СПСА23","СПСА24","СПСА25","СПСА26","СПСА26с","СПТР24","СПТР251","СПТР252","СПТР25с","СПТР261","СПТР262","СПТР26с","СПТРз23","СПТРз24с","СПУК24","СПУК25","СПУК26"];
@@ -536,13 +572,54 @@ const standalone = matchMedia("(display-mode: standalone)").matches || navigator
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone && !store.get("iosHint")){ setTimeout(() => toast("Поделиться → «На экран Домой», чтобы установить", 6000), 1500); store.set("iosHint","1"); }
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
+// ---------- ключ доступа ----------
+async function keyHash(k){
+  const canon = String(k).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ACCESS_SALT + canon));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+async function keyValid(k){ try { return !!k && ACCESS_HASHES.has(await keyHash(k)); } catch(e){ return false; } }
+function unlock(){
+  const l = $("lock");
+  l.classList.add("bye"); document.body.classList.remove("locked");
+  setTimeout(() => { l.hidden = true; l.classList.remove("bye"); }, 600);
+  render(true);
+  if (!store.get("group") && !location.hash.includes("/")) setTimeout(openSheet, 700);
+}
+$("lkIn").addEventListener("input", e => {
+  $("lkErr").classList.remove("on");
+  const v = e.target.value.toUpperCase();
+  if (/^[A-Z0-9]{0,12}$/.test(v.replace(/-/g,"")) && !v.startsWith("MASTER")) {
+    const raw = v.replace(/[^A-Z0-9]/g,"").slice(0,12);
+    e.target.value = raw.match(/.{1,4}/g)?.join("-") || "";
+  }
+});
+$("lkForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const k = $("lkIn").value.trim(); if (!k) return;
+  $("lkBtn").disabled = true;
+  if (await keyValid(k)){
+    store.set("accessKey", k);
+    $("lkForm").classList.add("lk-ok"); $("lkErr").classList.remove("on");
+    if (navigator.vibrate) navigator.vibrate(15);
+    setTimeout(unlock, 450);
+  } else {
+    const f = $("lkForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+    $("lkErr").classList.add("on");
+    if (navigator.vibrate) navigator.vibrate([30,40,30]);
+  }
+  $("lkBtn").disabled = false;
+});
+
 // ---------- старт ----------
 state.group = GROUPS.includes(store.get("group")) ? store.get("group") : "СПКС24";
 readHash();
 if (state.tab==="week"){ state.tab="today"; setTab("week"); }
-render(true);
-loadGroup(state.group).then(() => render(true));
-if (!store.get("group") && !location.hash.includes("/")) setTimeout(openSheet, 600);
+loadGroup(state.group).then(() => { if (!document.body.classList.contains("locked")) render(true); });
+keyValid(store.get("accessKey")).then(ok => {
+  if (ok){ render(true); if (!store.get("group") && !location.hash.includes("/")) setTimeout(openSheet, 600); }
+  else { document.body.classList.add("locked"); $("lock").hidden = false; setTimeout(() => $("lkIn").focus(), 400); }
+});
 </script>
 </body>
 </html>

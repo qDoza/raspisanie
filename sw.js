@@ -1,9 +1,10 @@
 // Офлайн-кэш приложения. При изменении файлов увеличь номер версии.
-const VERSION = "v4";
+const VERSION = "v5";
 const CACHE = "raspisanie-" + VERSION;
 const SHELL = [
   "./",
   "./index.html",
+  "./access.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
