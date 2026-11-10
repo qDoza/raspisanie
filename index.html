@@ -349,6 +349,7 @@ a.r{color:inherit;text-decoration:none}
 .step.on .n{background:var(--acc);color:var(--on-acc)}
 .step svg{display:inline-block;width:17px;height:17px;vertical-align:-3px;color:var(--acc)}
 .inst-note{font-size:13px;color:var(--t2);font-weight:600;line-height:1.5;text-align:center;padding:0 6px}
+.inst-skip[hidden]{display:none}
 .inst-skip{margin:auto auto 0;padding:18px 16px 6px;font-size:14px;color:var(--t2);font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--t3)}
 #instGo{margin-bottom:12px}
 
@@ -484,7 +485,7 @@ a.r{color:inherit;text-decoration:none}
 
 <script src="access.js"></script>
 <script>
-const APP_VERSION = "v15"; // совпадает с VERSION в sw.js
+const APP_VERSION = "v16"; // совпадает с VERSION в sw.js
 // ===== данные =====
 const GROUPS = ["СПБС25","СПБС26","СПБУ26","СПБУз23","СПБУз24","СПБУз24с","СПБУз25","СПБУз25с","СПБУз26","СПБУз26с","СПД23","СПДГ231","СПДГ232","СПДГ24","СПДГ25","СПДГ26","СПДГ26с","СПИС231","СПИС232","СПИС241","СПИС242","СПИС24с","СПИС251","СПИС252","СПИС25с","СПИСоз22","СПИСоз23","СПИСоз23с","СПКС23","СПКС24","СПКС25","СПКС26","СПКТ26","СПНА26с","СПП24","СПП25","СПП25с","СПП26","СПП26с","СППз23","СППз25","СППз26","СППз26с","СППО261","СППО262","СППО263","СПСА23","СПСА24","СПСА25","СПСА26","СПСА26с","СПТР24","СПТР251","СПТР252","СПТР25с","СПТР261","СПТР262","СПТР26с","СПТРз23","СПТРз24с","СПУК24","СПУК25","СПУК26"];
 const BELLS = [["08:30","10:05"],["10:15","11:50"],["12:35","14:10"],["14:20","15:55"],["16:05","17:35"],["17:45","19:20"],["19:30","21:05"]];
@@ -971,6 +972,9 @@ function renderInst(){
   $("ill").innerHTML = `<div class="ph" id="ph" data-ph="1">${ILL[instOS]}</div>`;
   $("steps").innerHTML = STEPS[instOS].map((s,i) => `<div class="step ${i===0?"on":""}"><div class="n">${i+1}</div><div>${s}</div></div>`).join("");
   $("instNote").textContent = NOTE[instOS];
+  // На iPhone Safari и установленное приложение хранят данные раздельно, а ключ в Safari не активируется —
+  // поэтому «продолжить в браузере» там ведёт в тупик. Оставляем кнопку только тем, у кого в Safari уже есть доступ.
+  $("instSkip").hidden = isIOS && !isStandalone() && !store.get("authToken") && !store.get("accessKey");
   $("instGo").hidden = !(instOS==="and" && deferred);
 }
 function instTick(){ instPh = instPh%3 + 1; const p=$("ph"); if (p) p.dataset.ph = instPh; [...$("steps").children].forEach((s,i) => s.classList.toggle("on", i+1===instPh)); }

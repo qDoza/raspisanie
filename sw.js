@@ -1,5 +1,5 @@
 ﻿// Офлайн-кэш приложения. При изменении файлов увеличь номер версии.
-const VERSION = "v15";
+const VERSION = "v16";
 const CACHE = "raspisanie-" + VERSION;
 // Расписание лежит в отдельном кэше, который НЕ стирается при обновлении приложения
 const DATA = "raspisanie-data";
