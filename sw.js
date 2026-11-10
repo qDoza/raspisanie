@@ -1,6 +1,8 @@
 // Офлайн-кэш приложения. При изменении файлов увеличь номер версии.
-const VERSION = "v12";
+const VERSION = "v13";
 const CACHE = "raspisanie-" + VERSION;
+// Расписание лежит в отдельном кэше, который НЕ стирается при обновлении приложения
+const DATA = "raspisanie-data";
 const SHELL = [
   "./",
   "./index.html",
@@ -18,7 +20,7 @@ self.addEventListener("install", e => {
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k.startsWith("raspisanie-") && k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k.startsWith("raspisanie-") && k !== CACHE && k !== DATA).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -30,12 +32,12 @@ self.addEventListener("fetch", e => {
 
   // Данные расписания (data/*.json): сначала сеть, без сети — последняя сохранённая копия
   if (url.origin === location.origin && url.pathname.includes("/data/")) {
+    const key = url.origin + url.pathname; // без ?параметров
     e.respondWith(
       fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
+        if (res.ok) { const copy = res.clone(); e.waitUntil(caches.open(DATA).then(c => c.put(key, copy))); }
         return res;
-      }).catch(() => caches.match(req))
+      }).catch(() => caches.open(DATA).then(c => c.match(key)).then(r => r || caches.match(req, { ignoreSearch: true })).then(r => r || Response.error()))
     );
     return;
   }

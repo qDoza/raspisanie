@@ -513,11 +513,25 @@ const dayName = d => { const diff=Math.round((d-today())/864e5); return diff===0
 let state = { group:null, tab:"home", weekStart:mondayOf(new Date()), day:Math.min((new Date().getDay()+6)%7,5), statMode:"week", statOff:0, statSel:null };
 
 const cache = {};
+// Последняя скачанная копия расписания хранится ещё и на самом телефоне (localStorage) —
+// это запасной вариант на случай, если браузер почистил кэш.
+let offlineShown = false;
 async function loadGroup(g){
-  if (g in cache) return cache[g];
-  try { const r = await fetch("data/"+encodeURIComponent(g)+".json",{cache:"no-cache"}); cache[g] = r.ok ? await r.json() : null; } catch(e){ cache[g] = null; }
-  return cache[g];
+  if (g in cache && cache[g]) return cache[g];
+  let data = null, fromNet = false;
+  try { const r = await fetch("data/"+encodeURIComponent(g)+".json",{cache:"no-cache"}); if (r.ok){ data = await r.json(); fromNet = true; } } catch(e){}
+  const saved = (() => { try { return JSON.parse(store.get("data:"+g) || "null"); } catch(e){ return null; } })();
+  if (data && (!saved || data.fetched !== saved.fetched)) store.set("data:"+g, JSON.stringify(data));
+  if (!data && saved) data = saved;
+  cache[g] = data;
+  if (!navigator.onLine || (!fromNet && data)){
+    if (data && !offlineShown){ offlineShown = true; setTimeout(() => toast("Нет интернета — показано сохранённое расписание", 3500), 600); }
+  }
+  // старые копии других групп не копим: оставляем текущую и недавние
+  try { const keep = new Set([g, ...(store.get("recent")||"").split(",")]); Object.keys(localStorage).filter(k => k.startsWith("data:") && !keep.has(k.slice(5))).forEach(k => localStorage.removeItem(k)); } catch(e){}
+  return data;
 }
+addEventListener("online", () => { const g = state.group; delete cache[g]; loadGroup(g).then(() => { if (!document.body.classList.contains("locked")) renderTab(false); }); });
 const lessonsOn = d => { const x=cache[state.group]; return (x && x.days[fmtISO(d)]) || []; };
 const inRange = d => { const x=cache[state.group], s=fmtISO(d); return !!x && s>=x.from && s<=x.to; };
 function nextStudyDay(from){ for (let i=1;i<=21;i++){ const d=addDays(from,i), ls=lessonsOn(d); if (ls.length) return [d,ls]; if (!inRange(d)) break; } return null; }
@@ -568,7 +582,9 @@ function listHTML(ls, clsFn=()=>"", i0=0){
 function stateEmpty(){
   const x = cache[state.group];
   if (!(state.group in cache)) return `<div class="sk"></div><div class="sk"></div><div class="sk"></div>`;
-  if (x === null) return `<div class="empty"><span class="e">📭</span>Расписание группы ${esc(state.group)} пока не загружено.<br>Загляни позже или выбери другую группу.</div>`;
+  if (x === null) return navigator.onLine
+    ? `<div class="empty"><span class="e">📭</span>Расписание группы ${esc(state.group)} пока не загружено.<br>Загляни позже или выбери другую группу.</div>`
+    : `<div class="empty"><span class="e">📡</span>Нет интернета, а расписание группы ${esc(state.group)} ещё не сохранено на телефоне.<br>Открой приложение с интернетом хотя бы раз.</div>`;
   return null;
 }
 function greet(){ const h=new Date().getHours(), g=h<5?"Доброй ночи,":h<12?"Доброе утро,":h<17?"Добрый день,":h<23?"Добрый вечер,":"Доброй ночи,"; const n=profName().split(/\s+/)[0]; return n ? g.slice(0,-1)+", "+n : g; }
@@ -635,6 +651,13 @@ function renderHome(animate){
   const em = stateEmpty();
   let hero, count = null;
   if (em && !(state.group in cache)) hero = `<div class="sk" style="height:196px;border-radius:28px"></div>`;
+  else if (cache[state.group] === null){
+    const off = !navigator.onLine;
+    hero = `<div class="hero"><div class="top"><span>${off?"Нет интернета":"Расписание не загрузилось"}</span><i>${off?"офлайн":"ошибка"}</i></div>
+      <div class="big"><span class="num">${off?"📡":"🔄"}</span></div>
+      <h2>${off?"Расписание этой группы ещё не сохранено на телефоне":"Попробуй открыть приложение ещё раз"}</h2>
+      <div class="bot"><span>${off?"Подключись один раз — дальше будет работать без сети":"Проверь интернет"}</span></div></div>`;
+  }
   else if (cur){
     const s=toM(cur.start), e=toM(cur.end), left=e-m; count=left;
     const [tl] = TYPE[cur.type]||TYPE.other;
