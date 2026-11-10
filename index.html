@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="utf-8">
@@ -253,7 +253,7 @@ body.sheet-open .sheet{transform:none}
 .lk-in{width:100%;height:58px;border-radius:18px;border:0;outline:none;background:var(--card);color:var(--t);font:inherit;font-size:20px;font-weight:800;letter-spacing:.14em;text-align:center;text-transform:uppercase;-webkit-user-select:text;user-select:text;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .3s}
 .lk-in:focus{box-shadow:inset 0 0 0 2px var(--acc)}
 .lk-in::placeholder{color:var(--t3);letter-spacing:.08em;font-weight:600}
-.lk-err{height:20px;margin:8px 0 8px;text-align:center;font-size:14px;font-weight:700;color:var(--exam);opacity:0;transition:opacity .25s}
+.lk-err{min-height:20px;line-height:1.35;margin:8px 0 8px;text-align:center;font-size:14px;font-weight:700;color:var(--exam);opacity:0;transition:opacity .25s}
 .lk-err.on{opacity:1}
 .btn{width:100%;height:58px;border-radius:18px;background:var(--acc);color:var(--on-acc);font-size:17px;font-weight:800;box-shadow:0 14px 30px color-mix(in srgb,var(--acc) 35%,transparent)}
 .lk-hint{text-align:center;margin-top:14px;font-size:13.5px;color:var(--t2);font-weight:600}
@@ -484,6 +484,7 @@ a.r{color:inherit;text-decoration:none}
 
 <script src="access.js"></script>
 <script>
+const APP_VERSION = "v15"; // совпадает с VERSION в sw.js
 // ===== данные =====
 const GROUPS = ["СПБС25","СПБС26","СПБУ26","СПБУз23","СПБУз24","СПБУз24с","СПБУз25","СПБУз25с","СПБУз26","СПБУз26с","СПД23","СПДГ231","СПДГ232","СПДГ24","СПДГ25","СПДГ26","СПДГ26с","СПИС231","СПИС232","СПИС241","СПИС242","СПИС24с","СПИС251","СПИС252","СПИС25с","СПИСоз22","СПИСоз23","СПИСоз23с","СПКС23","СПКС24","СПКС25","СПКС26","СПКТ26","СПНА26с","СПП24","СПП25","СПП25с","СПП26","СПП26с","СППз23","СППз25","СППз26","СППз26с","СППО261","СППО262","СППО263","СПСА23","СПСА24","СПСА25","СПСА26","СПСА26с","СПТР24","СПТР251","СПТР252","СПТР25с","СПТР261","СПТР262","СПТР26с","СПТРз23","СПТРз24с","СПУК24","СПУК25","СПУК26"];
 const BELLS = [["08:30","10:05"],["10:15","11:50"],["12:35","14:10"],["14:20","15:55"],["16:05","17:35"],["17:45","19:20"],["19:30","21:05"]];
@@ -609,7 +610,8 @@ function refreshProfileUI(){
   if ($("pAva")){ $("pAva").innerHTML = avaInner(); $("pNm").textContent = profName() || "Студент"; $("aIni").textContent = initials() || "Аа"; }
 }
 function renderProfile(){
-  const k = store.get("accessKey") || "", mk = /^M/i.test(k) ? "MASTER-••••" : k.slice(0,4)+"-••••-••••";
+  const k = store.get("accessKey") || "", a = authInfo(), mk = /^M/i.test(k) || a?.type==="master" ? "MASTER-••••" : (k.slice(0,4) || a?.mask || "••••")+"-••••-••••";
+  const until = a?.type==="master" ? "без ограничений" : a?.exp ? "до "+new Date(a.exp).toLocaleDateString("ru-RU") : "";
   const mode = store.get("avatar") || "kolobok", ph = store.get("avatarImg");
   $("shBody").innerHTML = `<div class="prof"><div class="pava" id="pAva"></div><div class="pname" id="pNm"></div><div class="psub">Группа ${esc(state.group)}</div></div>
     <div class="achoice" id="aChoice">
@@ -622,6 +624,7 @@ function renderProfile(){
     <div class="set">
       <button class="r press" id="pGroup"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg></div><b>Группа</b><span>${esc(state.group)}</span>${CHEV}</button>
       <div class="r"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/></svg></div><b>Ключ доступа</b><code>${esc(mk)}</code></div>
+      ${until?`<div class="r"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><b>Действует</b><span>${esc(until)}</span></div>`:""}
       <button class="r press danger" id="pKey"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5"/></svg></div><b>Сменить ключ</b>${CHEV}</button>
     </div>`;
   $("pName").value = profName();
@@ -813,7 +816,10 @@ const VIEWS = {home:"vHome", week:"vWeek", stats:"vStats", set:"vSet"};
 function renderTab(animate){
   $("groupName").textContent = state.group; $("setGroupVal").textContent = state.group;
   const x = cache[state.group];
-  $("ver").innerHTML = (x ? "Расписание с lk.tolgas.ru<br>обновлено на сайте "+esc(x.siteUpdated||"—") : "") + "<br>Расписание ПВГУС · 2026";
+  const saved = !!store.get("data:"+state.group);
+  $("ver").innerHTML = (x ? "Расписание с lk.tolgas.ru<br>обновлено на сайте "+esc(x.siteUpdated||"—")+"<br>" : "")
+    + (saved ? "✅ Сохранено на телефоне — работает без интернета" : "⚠️ Ещё не сохранено на телефоне")
+    + "<br>Версия "+APP_VERSION+" · Расписание ПВГУС · 2026";
   if (state.tab==="home") renderHome(animate);
   else if (state.tab==="week") renderWeek(0);
   else if (state.tab==="stats") renderStats(animate);
@@ -899,7 +905,7 @@ $("shBody").onclick = e => {
     store.set("avatar", v); $("aChoice").querySelectorAll("[data-av]").forEach(x => x.classList.toggle("on", x===av));
     refreshProfileUI(); const p=$("pAva"); p.classList.remove("pop"); void p.offsetWidth; p.classList.add("pop"); return; }
   if (e.target.closest("#pGroup")) return openSheet("groups");
-  if (e.target.closest("#pKey")){ closeSheet(); setTimeout(() => { store.del("accessKey"); showLock(); }, 300); }
+  if (e.target.closest("#pKey")){ closeSheet(); setTimeout(() => { clearAuth(); showLock(); }, 300); }
 };
 $("shBody").addEventListener("input", e => { if (e.target.id==="pName"){ store.set("profName", e.target.value.replace(/\s+/g," ").trimStart()); refreshProfileUI(); } });
 $("shBody").addEventListener("keydown", e => { if (e.target.id==="pName" && e.key==="Enter") e.target.blur(); });
@@ -976,20 +982,55 @@ $("instGo").onclick = async () => { if (!deferred) return; deferred.prompt(); co
 addEventListener("appinstalled", () => { if (!$("inst").hidden) hideInst(); });
 (() => { let ok=false; try { ok = sessionStorage.getItem("browserOk")==="1"; } catch(e){} if (!isStandalone() && !ok) showInst(); })();
 document.addEventListener("click", async e => { if (e.target.id==="inst" && deferred){ deferred.prompt(); await deferred.userChoice; deferred=null; $("toast").classList.remove("show"); store.set("installHidden","1"); } });
-if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if ("serviceWorker" in navigator){
+  // новая версия взяла управление — один раз перезагружаемся, чтобы сразу работать на ней
+  const hadCtrl = !!navigator.serviceWorker.controller; let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!hadCtrl || reloaded) return; reloaded = true; location.reload(); });
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js", {updateViaCache:"none"}).then(r => r.update()).catch(()=>{}));
+}
 
 // ===== ключ доступа =====
 $("stars").innerHTML = Array.from({length:18}, () => `<i style="left:${Math.random()*100}%;top:${Math.random()*55}%;animation-delay:${-Math.random()*3}s"></i>`).join("");
 async function keyHash(k){ const canon=String(k).toUpperCase().replace(/[^A-Z0-9]/g,""); const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ACCESS_SALT+canon)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
 async function keyValid(k){ try { return !!k && ACCESS_HASHES.has(await keyHash(k)); } catch(e){ return false; } }
-function showLock(){ document.body.classList.add("locked"); const l=$("lock"); l.hidden=false; $("lkIn").value=""; $("lkErr").classList.remove("on"); }
+// --- сервер ключей: 1 ключ = 1 устройство, срок до конца учебного года ---
+const API = "https://raspisanie-keys.qdoza.workers.dev";
+const ERR = {
+  bad:"Неверный ключ", busy:"Этот ключ уже активирован на другом телефоне", disabled:"Ключ отключён — напиши @smetanniy",
+  expired:"Срок действия ключа закончился", net:"Нужен интернет, чтобы активировать ключ", server:"Сервер не отвечает, попробуй чуть позже",
+  ios:"Сначала установи приложение на экран «Домой», ключ вводится уже в нём"
+};
+function deviceId(){ let d=store.get("deviceId"); if (!d){ d = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2)); store.set("deviceId", d); } return d; }
+async function apiPost(path, body){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 9000);
+  try { const r = await fetch(API+path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body), signal:ctl.signal, cache:"no-store"});
+    const j = await r.json().catch(() => ({})); return r.ok ? j : {error: j.error || "server"}; }
+  catch(e){ return {error:"net"}; } finally { clearTimeout(t); }
+}
+const authInfo = () => { try { return JSON.parse(store.get("authInfo")||"null"); } catch(e){ return null; } };
+function saveAuth(j, key){ store.set("authToken", j.token); store.set("authInfo", JSON.stringify({type:j.type, exp:j.exp, mask:j.mask})); if (key) store.set("accessKey", key); }
+function clearAuth(){ ["authToken","authInfo","accessKey"].forEach(k => store.del(k)); }
+const authExpired = () => { const a=authInfo(); return !!(a && a.exp && Date.parse(a.exp) < Date.now()); };
+let lastVerify = 0;
+async function verifyAuth(){
+  const tok = store.get("authToken"); if (!tok || Date.now()-lastVerify < 30*60e3) return; lastVerify = Date.now();
+  const j = await apiPost("/api/check", {token:tok});
+  if (j.ok){ store.set("authInfo", JSON.stringify({type:j.type, exp:j.exp, mask:j.mask})); return; }
+  if (["bad","busy","disabled","expired"].includes(j.error)){ clearAuth(); closeSheet(); showLock(j.error); }
+}
+function showLock(reason){ document.body.classList.add("locked"); const l=$("lock"); l.hidden=false; $("lkIn").value=""; lockErr(reason ? ERR[reason]||ERR.server : ""); }
+function lockErr(msg){ const e=$("lkErr"); e.textContent = msg || ""; e.classList.toggle("on", !!msg); }
 function unlock(){ const l=$("lock"); l.classList.add("bye"); document.body.classList.remove("locked"); setTimeout(()=>{ l.hidden=true; l.classList.remove("bye"); }, 600); renderTab(true); if (!store.get("group")) setTimeout(()=>openSheet("groups"), 700); }
-$("lkIn").addEventListener("input", e => { $("lkErr").classList.remove("on"); const v=e.target.value.toUpperCase(); if (!v.startsWith("M")){ const raw=v.replace(/[^A-Z0-9]/g,"").slice(0,12); e.target.value = raw.match(/.{1,4}/g)?.join("-") || ""; } });
+$("lkIn").addEventListener("input", e => { lockErr(""); const v=e.target.value.toUpperCase(); if (!v.startsWith("M")){ const raw=v.replace(/[^A-Z0-9]/g,"").slice(0,12); e.target.value = raw.match(/.{1,4}/g)?.join("-") || ""; } });
 $("lkForm").addEventListener("submit", async e => {
   e.preventDefault(); const k=$("lkIn").value.trim(); if (!k) return;
-  $("lkBtn").disabled = true;
-  if (await keyValid(k)){ store.set("accessKey", k); if (navigator.vibrate) navigator.vibrate(15); $("lkBtn").textContent="Готово ✓"; setTimeout(()=>{ unlock(); $("lkBtn").textContent="Начать"; }, 350); }
-  else { const f=$("lkForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); $("lkErr").classList.add("on"); if (navigator.vibrate) navigator.vibrate([30,40,30]); }
+  const fail = msg => { const f=$("lkForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); lockErr(msg); if (navigator.vibrate) navigator.vibrate([30,40,30]); };
+  // на iPhone в Safari ключ не активируем: иначе он привяжется к Safari, а не к установленному приложению
+  if (isIOS && !isStandalone()){ fail(ERR.ios); setTimeout(showInst, 1400); return; }
+  $("lkBtn").disabled = true; $("lkBtn").textContent = "Проверяю…";
+  const j = await apiPost("/api/activate", {key:k, device:deviceId()});
+  if (j.ok){ saveAuth(j, k); lastVerify = Date.now(); if (navigator.vibrate) navigator.vibrate(15); $("lkBtn").textContent="Готово ✓"; setTimeout(()=>{ unlock(); $("lkBtn").textContent="Начать"; refreshProfileUI(); }, 350); }
+  else { $("lkBtn").textContent = "Начать"; fail(ERR[j.error] || ERR.server); }
   $("lkBtn").disabled = false;
 });
 refreshProfileUI();
@@ -998,10 +1039,25 @@ refreshProfileUI();
 state.group = GROUPS.includes(store.get("group")) ? store.get("group") : "СПКС24";
 const startTab = readHash();
 loadGroup(state.group).then(() => { if (!document.body.classList.contains("locked")) renderTab(true); });
-keyValid(store.get("accessKey")).then(ok => {
-  if (ok){ if (startTab) setTab(startTab); else renderTab(true); if (!store.get("group")) setTimeout(()=>openSheet("groups"), 600); }
-  else showLock();
-});
+function enter(){ if (startTab) setTab(startTab); else renderTab(true); if (!store.get("group")) setTimeout(()=>openSheet("groups"), 600); }
+(async function boot(){
+  if (store.get("authToken")){
+    if (authExpired()){ clearAuth(); return showLock("expired"); }
+    enter(); verifyAuth(); return;              // без интернета просто работаем, проверка — когда сеть появится
+  }
+  // старые ключи (до сервера): тихо активируем на этом устройстве
+  const legacy = store.get("accessKey");
+  if (legacy && await keyValid(legacy)){
+    if (isIOS && !isStandalone()) return enter();
+    const j = await apiPost("/api/activate", {key:legacy, device:deviceId()});
+    if (j.ok){ saveAuth(j, legacy); lastVerify = Date.now(); refreshProfileUI(); return enter(); }
+    if (j.error==="net" || j.error==="server") return enter(); // нет сети — пускаем, активируем позже
+    clearAuth(); return showLock(j.error);
+  }
+  showLock();
+})();
+addEventListener("online", verifyAuth);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) verifyAuth(); });
 addEventListener("hashchange", () => { const g=state.group; readHash(); if (g!==state.group) loadGroup(state.group).then(()=>renderTab(true)); });
 </script>
 </body>

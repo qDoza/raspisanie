@@ -1,5 +1,5 @@
-// Офлайн-кэш приложения. При изменении файлов увеличь номер версии.
-const VERSION = "v13";
+﻿// Офлайн-кэш приложения. При изменении файлов увеличь номер версии.
+const VERSION = "v15";
 const CACHE = "raspisanie-" + VERSION;
 // Расписание лежит в отдельном кэше, который НЕ стирается при обновлении приложения
 const DATA = "raspisanie-data";
@@ -42,7 +42,22 @@ self.addEventListener("fetch", e => {
     return;
   }
 
-  // Оболочка приложения и шрифты: сначала кэш, в фоне обновляем
+  // Сама страница: сначала сеть (до 3 секунд), без сети — сохранённая копия
+  if (req.mode === "navigate") {
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const res = await Promise.race([fetch(req.url, { cache: "no-cache", credentials: "same-origin" }),new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 3000))]);
+        if (res.ok) e.waitUntil(cache.put("./index.html", res.clone()));
+        return res;
+      } catch (err) {
+        return (await cache.match("./index.html")) || (await cache.match("./")) || Response.error();
+      }
+    })());
+    return;
+  }
+
+  // Остальные файлы оболочки и шрифты: сначала кэш, в фоне обновляем
   e.respondWith(
     caches.match(req, { ignoreSearch: true }).then(cached => {
       const net = fetch(req).then(res => {
