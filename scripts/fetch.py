@@ -35,12 +35,18 @@ TYPE_MAP = [
 ]
 
 
+# Прокси берём только из переменной RASP_PROXY (например, в GitHub Actions).
+# Системный прокси и HTTP(S)_PROXY (Happ и т.п.) игнорируем: сайт пускает только российские адреса.
+_proxy = os.environ.get("RASP_PROXY")
+OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({"http": _proxy, "https": _proxy} if _proxy else {}))
+
+
 def get(url, tries=3):
     last = None
     for i in range(tries):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "ru"})
-            with urllib.request.urlopen(req, timeout=40) as r:
+            with OPENER.open(req, timeout=40) as r:
                 return r.read().decode("utf-8", "replace")
         except Exception as e:  # noqa: BLE001
             last = e
@@ -131,17 +137,28 @@ def fetch_group(group, start, end):
 
 
 def save(group, days, site_updated, start, end):
+    """Записывает файл группы. Возвращает False, если расписание не изменилось."""
     os.makedirs(DATA, exist_ok=True)
+    path = os.path.join(DATA, f"{group}.json")
+    days = dict(sorted(days.items()))
+    if os.path.exists(path):
+        try:
+            old = json.load(open(path, encoding="utf-8"))
+            if old.get("days") == days and old.get("from") == start.isoformat() and old.get("to") == end.isoformat():
+                return False
+        except ValueError:
+            pass
     out = {
         "group": group,
         "from": start.isoformat(),
         "to": end.isoformat(),
         "siteUpdated": site_updated,
         "fetched": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-        "days": dict(sorted(days.items())),
+        "days": days,
     }
-    with open(os.path.join(DATA, f"{group}.json"), "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+    return True
 
 
 def main(argv):
@@ -164,9 +181,9 @@ def main(argv):
     for g in groups:
         try:
             days, upd = fetch_group(g, start, end)
-            save(g, days, upd, start, end)
+            changed = save(g, days, upd, start, end)
             ok.append(g)
-            print(f"{g}: {sum(len(v) for v in days.values())} пар")
+            print(f"{g}: {sum(len(v) for v in days.values())} пар{'' if changed else ' (без изменений)'}")
         except Exception as e:  # noqa: BLE001
             failed.append(g)
             print(f"{g}: ошибка {e}", file=sys.stderr)
@@ -178,6 +195,9 @@ def main(argv):
     if os.path.exists(index_path):
         prev = json.load(open(index_path, encoding="utf-8"))
     all_groups = sorted(set(prev.get("groups", [])) | set(ok))
+    if prev.get("groups") == all_groups and prev.get("failed") == failed:
+        print(f"Готово: {len(ok)} групп, ошибок: {len(failed)}")
+        return 0 if ok else 1
     with open(index_path, "w", encoding="utf-8") as f:
         json.dump({
             "groups": all_groups,

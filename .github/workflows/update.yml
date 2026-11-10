@@ -60,11 +60,13 @@ jobs:
 
       - name: Настроить прокси
         if: env.WG_CONFIG == '' && env.OVPN_CONFIG == '' && env.PROXY_URL != ''
-        run: echo "HTTPS_PROXY=$PROXY_URL" >> "$GITHUB_ENV"
+        run: |
+          echo "RASP_PROXY=$PROXY_URL" >> "$GITHUB_ENV"
+          echo "CURL_PROXY=-x $PROXY_URL" >> "$GITHUB_ENV"
 
       - name: Проверить доступ к сайту
         run: |
-          code=$(curl -sS -m 40 -o /dev/null -w "%{http_code}" https://$SITE_HOST/public-schedule/search/ || true)
+          code=$(curl $CURL_PROXY -sS -m 40 -o /dev/null -w "%{http_code}" https://$SITE_HOST/public-schedule/search/ || true)
           echo "HTTP $code"
           if [ "$code" != "200" ]; then echo "::error::Сайт $SITE_HOST недоступен (HTTP $code). Проверь VPN/прокси."; exit 1; fi
 
