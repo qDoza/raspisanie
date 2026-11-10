@@ -153,7 +153,7 @@ body.sheet-open #app{transform:scale(.93) translateY(calc(env(safe-area-inset-to
 .chart .pt{fill:var(--bg);stroke:var(--t);stroke-width:3}
 .tip{position:absolute;transform:translate(-50%,-100%);padding:6px 11px;border-radius:12px;background:var(--acc);color:var(--on-acc);font-size:13px;font-weight:800;white-space:nowrap;pointer-events:none;will-change:left,top}
 .tip span{display:block;line-height:18px;height:18px}
-.tip span.sw{animation:tipSw .35s var(--ease)}
+.tip span.swp{animation:tipSw .35s var(--ease)}
 @keyframes tipSw{from{opacity:0;transform:translateY(5px) scale(.9)}}
 .tip::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:var(--acc);transform:translateX(-50%) rotate(45deg);border-radius:2px}
 .xl{display:grid;grid-template-columns:repeat(6,1fr);margin-top:6px}
@@ -260,6 +260,98 @@ body.sheet-open .sheet{transform:none}
 .shake{animation:shake .5s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(4px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
 
+.lk-buy{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:14px;color:var(--t2);font-weight:600;text-decoration:none}
+.lk-buy b{color:var(--t);font-weight:800}
+.lk-buy svg{width:20px;height:20px;color:#2aabee}
+
+/* ---------- профиль ---------- */
+.ava{display:grid;place-items:center;padding:0}
+.ini{width:100%;height:100%;display:grid;place-items:center;font-weight:800;color:var(--on-acc);background:linear-gradient(140deg,color-mix(in srgb,var(--acc) 72%,#fff),color-mix(in srgb,var(--acc) 82%,#000))}
+.ava .ini{font-size:17px}
+.prof{display:flex;flex-direction:column;align-items:center;padding:2px 0 4px}
+.pava{width:104px;height:104px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--bg),0 0 0 5.5px var(--acc)}
+.pava img{width:100%;height:100%;object-fit:cover}
+.pava .ini{font-size:38px}
+.pava.pop{animation:pop .5s var(--spring)}
+@keyframes pop{from{transform:scale(.85)}}
+.pname{margin-top:14px;font-size:21px;font-weight:800;text-align:center}
+.psub{margin-top:3px;font-size:14px;color:var(--t2);font-weight:600}
+.achoice{display:flex;gap:12px;justify-content:center;margin:18px 0 6px}
+.achoice button{width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--card);display:grid;place-items:center;color:var(--t2);box-shadow:0 0 0 2.5px transparent;transition:box-shadow .3s,transform .3s var(--spring)}
+.achoice button.on{box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px var(--acc)}
+.achoice img{width:100%;height:100%;object-fit:cover}
+.achoice .ini{font-size:18px}
+.achoice svg{width:24px;height:24px}
+.achint{text-align:center;font-size:12.5px;color:var(--t3);font-weight:600;margin-bottom:18px}
+.field{display:block;margin:0 0 14px}
+.field span{display:block;font-size:13px;color:var(--t2);font-weight:700;margin:0 4px 8px}
+.field input{width:100%;height:54px;border-radius:16px;border:0;outline:none;background:var(--card);color:var(--t);font:inherit;font-size:16px;font-weight:700;padding:0 16px;-webkit-user-select:text;user-select:text;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .3s}
+.field input:focus{box-shadow:inset 0 0 0 2px var(--acc)}
+.field input::placeholder{color:var(--t3);font-weight:600}
+.set .r code{font-family:inherit;font-size:14px;color:var(--t2);font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.set .r b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set .r.danger b{color:var(--exam)}
+.set .r.danger .ic{background:color-mix(in srgb,var(--exam) 14%,transparent);color:var(--exam)}
+a.r{color:inherit;text-decoration:none}
+.set .r .ic.tg{background:color-mix(in srgb,#2aabee 16%,transparent);color:#2aabee}
+
+/* ---------- экран установки (открыто в браузере) ---------- */
+.inst{position:fixed;inset:0;z-index:56;background:var(--bg);overflow-y:auto;padding:calc(env(safe-area-inset-top) + 24px) max(20px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 16px) max(20px,env(safe-area-inset-left));transition:opacity .45s var(--ease),transform .5s var(--ease)}
+.inst[hidden]{display:none}
+.inst.bye{opacity:0;transform:translateY(30px);pointer-events:none}
+.inst>.in{max-width:440px;min-height:100%;margin:0 auto;display:flex;flex-direction:column;animation:rise .7s var(--spring) backwards}
+.inst .hd{display:flex;align-items:center;gap:14px}
+.inst .hd img{width:60px;height:60px;border-radius:16px;box-shadow:0 12px 26px rgba(0,0,0,.3)}
+.inst h1{margin:0;font-size:22px;font-weight:800;line-height:1.15}
+.inst .hd small{display:block;color:var(--t2);font-size:13.5px;font-weight:600;margin-top:3px}
+.inst .lead{color:var(--t2);font-size:15px;line-height:1.45;font-weight:500;margin:14px 0 16px}
+.os{display:flex;padding:4px;border-radius:15px;background:var(--card);position:relative;margin-bottom:14px}
+.os i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);border-radius:12px;background:var(--acc);transition:transform .45s var(--spring)}
+.os.and i{transform:translateX(100%)}
+.os button{flex:1;position:relative;padding:9px 0;font-size:14px;font-weight:700;color:var(--t2);transition:color .3s}
+.os button.on{color:var(--on-acc)}
+.ph{position:relative;height:186px;border-radius:26px;background:var(--card);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.ph svg{width:20px;height:20px}
+.ph .pg{padding:18px 18px 0;display:grid;gap:9px}
+.ph .pg i{display:block;height:9px;border-radius:5px;background:var(--card2)}
+.ph .pg .blk{height:52px;border-radius:12px;background:color-mix(in srgb,var(--acc) 28%,transparent)}
+.hot{position:relative}
+.hot::after{content:"";position:absolute;inset:-4px;border-radius:12px;border:2.5px solid var(--acc);opacity:0;pointer-events:none}
+.ph[data-ph="1"] .hot.a::after,.ph[data-ph="2"] .hot.b::after,.ph[data-ph="3"] .hot.c::after{animation:hot 1.2s var(--ease) .45s infinite}
+@keyframes hot{0%{opacity:0;transform:scale(1.35)}35%,70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+.sbar{position:absolute;left:0;right:0;bottom:0;height:50px;display:flex;justify-content:space-around;align-items:center;background:var(--card2);color:#3d8bff}
+.sbar span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px}
+.ssheet{position:absolute;left:8px;right:8px;bottom:8px;border-radius:18px;background:var(--bg);padding:6px;box-shadow:0 -10px 30px rgba(0,0,0,.25);transform:translateY(118%);transition:transform .55s var(--sheet)}
+.ph[data-ph="2"] .ssheet{transform:none}
+.srow,.mrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;font-size:13.5px;font-weight:700;transition:background .4s}
+.srow+.srow{border-top:1px solid var(--line)}
+.srow svg{color:var(--t2)}
+.ph[data-ph="2"] .srow.hot,.ph[data-ph="2"] .mrow.hot{background:color-mix(in srgb,var(--acc) 18%,transparent)}
+.dlg{position:absolute;left:12px;right:12px;top:30px;border-radius:18px;background:var(--bg);padding:12px 14px;box-shadow:0 18px 40px rgba(0,0,0,.3);opacity:0;transform:translateY(-10px) scale(.96);transition:opacity .4s var(--ease),transform .5s var(--spring)}
+.ph[data-ph="3"] .dlg{opacity:1;transform:none}
+.dlg .dh,.dlg .da{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700}
+.dlg .dh b{font-size:13px}
+.dlg .blue{color:#3d8bff;padding:4px 6px;border-radius:9px}
+.dlg .dr{display:flex;align-items:center;gap:11px;margin:12px 0 4px;font-size:14px;font-weight:800}
+.dlg .dr img{width:44px;height:44px;border-radius:11px}
+.dlg .dr small{display:block;font-size:12px;color:var(--t2);font-weight:600}
+.dlg .da{justify-content:flex-end;gap:14px;margin-top:10px}
+.cbar{display:flex;align-items:center;gap:8px;padding:10px 10px 0 12px}
+.cbar .url{flex:1;padding:9px 14px;border-radius:20px;background:var(--card2);font-size:12.5px;color:var(--t2);font-weight:700}
+.cbar span{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;color:var(--t2)}
+.menu{position:absolute;right:8px;top:46px;width:66%;border-radius:14px;background:var(--bg);padding:6px;box-shadow:0 16px 36px rgba(0,0,0,.3);transform-origin:100% 0;opacity:0;transform:scale(.8);transition:opacity .3s var(--ease),transform .45s var(--spring)}
+.ph[data-ph="2"] .menu{opacity:1;transform:none}
+.mrow{padding:9px 10px;font-size:13px}
+.steps{display:grid;gap:8px;margin:12px 0}
+.step{display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:18px;background:var(--card);font-size:14.5px;font-weight:600;line-height:1.35;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .4s,background .4s}
+.step.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.step .n{width:30px;height:30px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--acc);background:color-mix(in srgb,var(--acc) 16%,transparent);transition:background .4s,color .4s}
+.step.on .n{background:var(--acc);color:var(--on-acc)}
+.step svg{display:inline-block;width:17px;height:17px;vertical-align:-3px;color:var(--acc)}
+.inst-note{font-size:13px;color:var(--t2);font-weight:600;line-height:1.5;text-align:center;padding:0 6px}
+.inst-skip{margin:auto auto 0;padding:18px 16px 6px;font-size:14px;color:var(--t2);font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--t3)}
+#instGo{margin-bottom:12px}
+
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -271,7 +363,7 @@ body.sheet-open .sheet{transform:none}
   <section class="view on" id="vHome">
     <div class="hello">
       <button class="press" id="helloGroup" style="text-align:left"><small id="greet">Привет,</small><b><span id="groupName">—</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></b></button>
-      <div class="ava"><img src="icons/icon-192.png" alt=""></div>
+      <button class="ava press" id="avaBtn" aria-label="Профиль"><img src="icons/icon-192.png" alt=""></button>
     </div>
     <div id="homeHero"></div>
     <div class="pdots" id="pdots"></div>
@@ -328,8 +420,16 @@ body.sheet-open .sheet{transform:none}
     <div class="set">
       <button class="r press" id="setGroup"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg></div><b>Группа</b><span id="setGroupVal"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
       <button class="r press" id="setBells"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16v-5a6 6 0 0 0-12 0v5l-2 2h16zM10 21h4"/></svg></div><b>Расписание звонков</b><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
-      <button class="r press" id="setLogout"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/></svg></div><b>Сменить ключ</b><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
+    <div class="lbl">Аккаунт</div>
+    <div class="set">
+      <button class="r press" id="setProfile"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><b>Профиль</b><span id="setProfVal"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="lbl">Поддержка</div>
+    <div class="set">
+      <a class="r press" href="https://t.me/smetanniy" target="_blank" rel="noopener"><div class="ic tg" data-tg></div><b>Telegram</b><span>@smetanniy</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="ver" style="margin-top:-4px;margin-bottom:6px">Вопросы, ошибки в расписании, купить ключ другу —<br>всё сюда</div>
     <div class="ver" id="ver"></div>
   </section>
 
@@ -366,8 +466,21 @@ body.sheet-open .sheet{transform:none}
     <div class="lk-err" id="lkErr">Неверный ключ</div>
     <button class="btn press" id="lkBtn" type="submit">Начать</button>
   </form>
-  <div class="lk-hint">Нет ключа? Напиши автору приложения</div>
+  <a class="lk-buy" href="https://t.me/smetanniy" target="_blank" rel="noopener"><span data-tg></span>Нет ключа? Купить у <b>@smetanniy</b></a>
 </div>
+
+<input type="file" id="pFile" accept="image/*" hidden>
+
+<div class="inst" id="inst" hidden><div class="in">
+  <div class="hd"><img src="icons/icon-192.png" alt=""><div><h1>Установи приложение</h1><small>Расписание ПВГУС</small></div></div>
+  <p class="lead">Добавь его на экран «Домой» — откроется на весь экран и будет работать даже без интернета.</p>
+  <div class="os" id="os"><i></i><button data-os="ios">iPhone</button><button data-os="and">Android</button></div>
+  <div id="ill"></div>
+  <div class="steps" id="steps"></div>
+  <button class="btn press" id="instGo" hidden>Установить в один тап</button>
+  <div class="inst-note" id="instNote"></div>
+  <button class="inst-skip" id="instSkip">Продолжить в браузере</button>
+</div></div>
 
 <script src="access.js"></script>
 <script>
@@ -458,7 +571,58 @@ function stateEmpty(){
   if (x === null) return `<div class="empty"><span class="e">📭</span>Расписание группы ${esc(state.group)} пока не загружено.<br>Загляни позже или выбери другую группу.</div>`;
   return null;
 }
-function greet(){ const h=new Date().getHours(); return h<5?"Доброй ночи,":h<12?"Доброе утро,":h<17?"Добрый день,":h<23?"Добрый вечер,":"Доброй ночи,"; }
+function greet(){ const h=new Date().getHours(), g=h<5?"Доброй ночи,":h<12?"Доброе утро,":h<17?"Добрый день,":h<23?"Добрый вечер,":"Доброй ночи,"; const n=profName().split(/\s+/)[0]; return n ? g.slice(0,-1)+", "+n : g; }
+
+// ===== профиль =====
+const TG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.7 4.1 3.2 10.9c-1.2.5-1.2 1.2-.2 1.5l4.5 1.4 1.7 5.3c.2.6.4.8.9.8.4 0 .6-.2.8-.4l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-14c.3-1.2-.5-1.8-1.6-1.4zM8.6 13.5l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2z"/></svg>';
+document.querySelectorAll("[data-tg]").forEach(e => e.innerHTML = TG);
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>';
+const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>';
+const profName = () => (store.get("profName")||"").trim();
+const initials = () => profName().split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join("");
+function avaInner(){
+  const mode = store.get("avatar") || "kolobok", ph = store.get("avatarImg");
+  if (mode==="photo" && ph) return `<img src="${ph}" alt="">`;
+  if (mode==="ini" && initials()) return `<div class="ini">${esc(initials())}</div>`;
+  return `<img src="icons/icon-192.png" alt="">`;
+}
+function refreshProfileUI(){
+  $("avaBtn").innerHTML = avaInner();
+  $("greet").textContent = greet();
+  $("setProfVal").textContent = profName() || "Не заполнен";
+  if ($("pAva")){ $("pAva").innerHTML = avaInner(); $("pNm").textContent = profName() || "Студент"; $("aIni").textContent = initials() || "Аа"; }
+}
+function renderProfile(){
+  const k = store.get("accessKey") || "", mk = /^M/i.test(k) ? "MASTER-••••" : k.slice(0,4)+"-••••-••••";
+  const mode = store.get("avatar") || "kolobok", ph = store.get("avatarImg");
+  $("shBody").innerHTML = `<div class="prof"><div class="pava" id="pAva"></div><div class="pname" id="pNm"></div><div class="psub">Группа ${esc(state.group)}</div></div>
+    <div class="achoice" id="aChoice">
+      <button class="press ${mode==="kolobok"?"on":""}" data-av="kolobok" aria-label="Колобок"><img src="icons/icon-192.png" alt=""></button>
+      <button class="press ${mode==="ini"?"on":""}" data-av="ini" aria-label="Инициалы"><div class="ini" id="aIni"></div></button>
+      <button class="press ${mode==="photo"?"on":""}" data-av="photo" aria-label="Фото">${ph?`<img src="${ph}" alt="">`:CAM}</button>
+    </div>
+    <div class="achint">Колобок, инициалы или своё фото${ph?" · нажми на фото ещё раз, чтобы заменить":""}</div>
+    <label class="field"><span>Имя и фамилия</span><input id="pName" placeholder="Необязательно" maxlength="40" autocomplete="name" enterkeyhint="done"></label>
+    <div class="set">
+      <button class="r press" id="pGroup"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg></div><b>Группа</b><span>${esc(state.group)}</span>${CHEV}</button>
+      <div class="r"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/></svg></div><b>Ключ доступа</b><code>${esc(mk)}</code></div>
+      <button class="r press danger" id="pKey"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5"/></svg></div><b>Сменить ключ</b>${CHEV}</button>
+    </div>`;
+  $("pName").value = profName();
+  refreshProfileUI();
+}
+$("avaBtn").onclick = () => openSheet("profile");
+$("setProfile").onclick = () => openSheet("profile");
+$("pFile").onchange = e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  const img = new Image();
+  img.onload = () => { const s=256, c=document.createElement("canvas"); c.width=c.height=s; const m=Math.min(img.width,img.height);
+    c.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);
+    store.set("avatarImg", c.toDataURL("image/jpeg",.85)); store.set("avatar","photo"); URL.revokeObjectURL(img.src);
+    renderProfile(); $("pAva").classList.add("pop"); };
+  img.onerror = () => toast("Не получилось открыть это фото", 3000);
+  img.src = URL.createObjectURL(f);
+};
 
 // ===== главная =====
 let lastCount = null;
@@ -600,7 +764,7 @@ function moveSel(i){
   const g=chartGeo; if (!g || i===state.statSel) return;
   state.statSel=i;
   $("xl").querySelectorAll("[data-s]").forEach(b => b.classList.toggle("on", +b.dataset.s===i));
-  $("tip").innerHTML = `<span class="sw">${pairs(g.pts[i].lessons.length)}</span>`;
+  $("tip").innerHTML = `<span class="swp">${pairs(g.pts[i].lessons.length)}</span>`;
   cancelAnimationFrame(g.raf);
   const from=g.cur, to=g.xy[i][0], t0=performance.now(), dur=Math.min(700, 380+Math.abs(to-from)*1.2);
   if (document.hidden){ g.cur=to; placeSel(to, g.xy[i][1]); return; }
@@ -686,9 +850,9 @@ function openSheet(kind="groups"){
   sheetKind = kind;
   const sh = $("sheet");
   sh.classList.toggle("short", kind!=="groups");
-  $("shTitle").textContent = kind==="groups" ? "Группа" : "Звонки";
+  $("shTitle").textContent = {groups:"Группа", bells:"Звонки", profile:"Профиль"}[kind];
   $("shSearch").style.display = kind==="groups" ? "" : "none";
-  if (kind==="groups") renderGroups(); else renderBells();
+  if (kind==="groups") renderGroups(); else if (kind==="profile") renderProfile(); else renderBells();
   document.body.classList.add("sheet-open"); $("shBody").scrollTop = 0;
 }
 function closeSheet(){ document.body.classList.remove("sheet-open"); $("q").blur(); $("q").value=""; $("sheet").style.transform=""; }
@@ -703,7 +867,19 @@ $("helloGroup").onclick = () => openSheet("groups"); $("navGroup").onclick = () 
 $("setGroup").onclick = () => openSheet("groups"); $("setBells").onclick = () => openSheet("bells");
 $("scrim").onclick = closeSheet; $("shDone").onclick = closeSheet;
 $("q").oninput = renderGroups;
-$("shBody").onclick = e => { const b=e.target.closest("[data-g]"); if (b) pick(b.dataset.g); };
+$("shBody").onclick = e => {
+  const b=e.target.closest("[data-g]"); if (b) return pick(b.dataset.g);
+  const av=e.target.closest("[data-av]");
+  if (av){ const v=av.dataset.av;
+    if (v==="photo" && (!store.get("avatarImg") || store.get("avatar")==="photo")) return $("pFile").click();
+    if (v==="ini" && !initials()){ $("pName").focus(); toast("Сначала впиши имя — из него возьмём инициалы", 2800); return; }
+    store.set("avatar", v); $("aChoice").querySelectorAll("[data-av]").forEach(x => x.classList.toggle("on", x===av));
+    refreshProfileUI(); const p=$("pAva"); p.classList.remove("pop"); void p.offsetWidth; p.classList.add("pop"); return; }
+  if (e.target.closest("#pGroup")) return openSheet("groups");
+  if (e.target.closest("#pKey")){ closeSheet(); setTimeout(() => { store.del("accessKey"); showLock(); }, 300); }
+};
+$("shBody").addEventListener("input", e => { if (e.target.id==="pName"){ store.set("profName", e.target.value.replace(/\s+/g," ").trimStart()); refreshProfileUI(); } });
+$("shBody").addEventListener("keydown", e => { if (e.target.id==="pName" && e.key==="Enter") e.target.blur(); });
 (() => { let y0=null, dy=0; const sh=$("sheet");
   sh.addEventListener("touchstart", e => { if (e.target.closest(".sh-body") && $("shBody").scrollTop>0) return; y0=e.touches[0].clientY; dy=0; sh.classList.add("dragging"); }, {passive:true});
   sh.addEventListener("touchmove", e => { if (y0===null) return; dy=Math.max(0,e.touches[0].clientY-y0); sh.style.transform=`translateY(${dy}px)`; }, {passive:true});
@@ -730,7 +906,52 @@ document.addEventListener("touchmove", e => { if (e.touches.length > 1 || (e.sca
 function toast(html, ms){ const t=$("toast"); t.innerHTML=html; t.classList.add("show"); clearTimeout(t._h); if (ms) t._h=setTimeout(()=>t.classList.remove("show"), ms); }
 addEventListener("offline", () => toast("Нет интернета — показано сохранённое расписание", 3500));
 let deferred = null;
-addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred=e; if (!store.get("installHidden")) toast('Установить на главный экран? <button id="inst">Установить</button>', 9000); });
+addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred=e; if (!$("inst").hidden){ renderInst(); return; } if (!store.get("installHidden")) toast('Установить на главный экран? <button id="inst">Установить</button>', 9000); });
+
+// ===== экран «установи приложение» (если открыто просто в браузере) =====
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+const SV = (p, extra="") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${p}</svg>`;
+const I_SHARE = SV('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M8 10.5H7A2 2 0 0 0 5 12.5v6.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6.5a2 2 0 0 0-2-2h-1"/>');
+const I_ADD = SV('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8.5v7M8.5 12h7"/>');
+const I_DOTS = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="18.5" r="2"/></svg>';
+const PAGE = `<div class="pg"><i style="width:45%"></i><div class="blk"></div><i></i><i style="width:75%"></i><i style="width:60%"></i></div>`;
+const APPROW = `<div class="dr"><img src="icons/icon-192.png" alt=""><div>Расписание<small>qdoza.github.io</small></div></div>`;
+const ILL = {
+  ios: `${PAGE}
+    <div class="sbar"><span>${SV('<path d="M15 5l-7 7 7 7"/>')}</span><span>${SV('<path d="M9 5l7 7-7 7"/>')}</span><span class="hot a">${I_SHARE}</span><span>${SV('<path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5zM12 6v13.5"/>')}</span><span>${SV('<rect x="7" y="7" width="13" height="13" rx="3"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>')}</span></div>
+    <div class="ssheet"><div class="srow">${SV('<rect x="8" y="8" width="12" height="12" rx="3"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>')}Скопировать</div><div class="srow">${SV('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>')}Добавить в Избранное</div><div class="srow hot b">${I_ADD}На экран «Домой»</div></div>
+    <div class="dlg"><div class="dh"><span class="blue">Отменить</span><b>На экран «Домой»</b><span class="blue hot c">Добавить</span></div>${APPROW}</div>`,
+  and: `<div class="cbar"><div class="url">qdoza.github.io/raspisanie</div><span class="hot a">${I_DOTS}</span></div>${PAGE}
+    <div class="menu"><div class="mrow">Новая вкладка</div><div class="mrow">История</div><div class="mrow hot b">${I_ADD}Установить приложение</div><div class="mrow">Настройки</div></div>
+    <div class="dlg"><b style="font-size:14px">Установить приложение?</b>${APPROW}<div class="da"><span class="blue">Отмена</span><span class="blue hot c">Установить</span></div></div>`
+};
+const STEPS = {
+  ios: [`Нажми ${I_SHARE} «Поделиться» внизу экрана Safari`, `Пролистай вниз и выбери ${I_ADD} «На экран „Домой“»`, `Нажми «Добавить» — и открывай Расписание с иконки на экране`],
+  and: [`Нажми ${I_DOTS} в правом верхнем углу Chrome`, `Выбери «Установить приложение» или «Добавить на главный экран»`, `Подтверди — иконка появится на рабочем столе`]
+};
+const NOTE = {
+  ios: "Открывай ссылку именно в Safari. Если она открылась внутри Telegram — нажми ⋯ и «Открыть в Safari».",
+  and: "Открывай ссылку в Chrome. Если она открылась внутри Telegram — нажми ⋮ и «Открыть в браузере»."
+};
+let instOS = isIOS ? "ios" : "and", instPh = 1, instTimer = null;
+function renderInst(){
+  $("os").classList.toggle("and", instOS==="and");
+  $("os").querySelectorAll("[data-os]").forEach(b => b.classList.toggle("on", b.dataset.os===instOS));
+  instPh = 1;
+  $("ill").innerHTML = `<div class="ph" id="ph" data-ph="1">${ILL[instOS]}</div>`;
+  $("steps").innerHTML = STEPS[instOS].map((s,i) => `<div class="step ${i===0?"on":""}"><div class="n">${i+1}</div><div>${s}</div></div>`).join("");
+  $("instNote").textContent = NOTE[instOS];
+  $("instGo").hidden = !(instOS==="and" && deferred);
+}
+function instTick(){ instPh = instPh%3 + 1; const p=$("ph"); if (p) p.dataset.ph = instPh; [...$("steps").children].forEach((s,i) => s.classList.toggle("on", i+1===instPh)); }
+function showInst(){ $("inst").hidden = false; renderInst(); clearInterval(instTimer); instTimer = setInterval(instTick, 2600); }
+function hideInst(){ const el=$("inst"); el.classList.add("bye"); clearInterval(instTimer); setTimeout(() => { el.hidden = true; el.classList.remove("bye"); }, 500); }
+$("os").onclick = e => { const b=e.target.closest("[data-os]"); if (!b || b.dataset.os===instOS) return; instOS=b.dataset.os; renderInst(); clearInterval(instTimer); instTimer=setInterval(instTick, 2600); };
+$("instSkip").onclick = () => { try { sessionStorage.setItem("browserOk","1"); } catch(e){} hideInst(); };
+$("instGo").onclick = async () => { if (!deferred) return; deferred.prompt(); const r = await deferred.userChoice; deferred = null; if (r.outcome==="accepted") hideInst(); else renderInst(); };
+addEventListener("appinstalled", () => { if (!$("inst").hidden) hideInst(); });
+(() => { let ok=false; try { ok = sessionStorage.getItem("browserOk")==="1"; } catch(e){} if (!isStandalone() && !ok) showInst(); })();
 document.addEventListener("click", async e => { if (e.target.id==="inst" && deferred){ deferred.prompt(); await deferred.userChoice; deferred=null; $("toast").classList.remove("show"); store.set("installHidden","1"); } });
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
@@ -748,7 +969,7 @@ $("lkForm").addEventListener("submit", async e => {
   else { const f=$("lkForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); $("lkErr").classList.add("on"); if (navigator.vibrate) navigator.vibrate([30,40,30]); }
   $("lkBtn").disabled = false;
 });
-$("setLogout").onclick = () => { store.del("accessKey"); showLock(); };
+refreshProfileUI();
 
 // ===== старт =====
 state.group = GROUPS.includes(store.get("group")) ? store.get("group") : "СПКС24";

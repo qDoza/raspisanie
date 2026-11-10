@@ -1,5 +1,5 @@
 // Офлайн-кэш приложения. При изменении файлов увеличь номер версии.
-const VERSION = "v11";
+const VERSION = "v12";
 const CACHE = "raspisanie-" + VERSION;
 const SHELL = [
   "./",
