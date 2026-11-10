@@ -151,7 +151,10 @@ body.sheet-open #app{transform:scale(.93) translateY(calc(env(safe-area-inset-to
 @keyframes fadeIn{to{opacity:1}}
 .chart .guide{stroke:var(--t3);stroke-width:1.4;stroke-dasharray:4 5}
 .chart .pt{fill:var(--bg);stroke:var(--t);stroke-width:3}
-.tip{position:absolute;transform:translate(-50%,-100%);padding:6px 11px;border-radius:12px;background:var(--acc);color:var(--on-acc);font-size:13px;font-weight:800;white-space:nowrap;transition:left .45s var(--spring),top .45s var(--spring);pointer-events:none}
+.tip{position:absolute;transform:translate(-50%,-100%);padding:6px 11px;border-radius:12px;background:var(--acc);color:var(--on-acc);font-size:13px;font-weight:800;white-space:nowrap;pointer-events:none;will-change:left,top}
+.tip span{display:inline-block}
+.tip span.sw{animation:tipSw .35s var(--ease)}
+@keyframes tipSw{from{opacity:0;transform:translateY(5px) scale(.9)}}
 .tip::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:var(--acc);transform:translateX(-50%) rotate(45deg);border-radius:2px}
 .xl{display:grid;grid-template-columns:repeat(6,1fr);margin-top:6px}
 .xl button{font-size:13px;font-weight:600;color:var(--t2);padding:6px 0}
@@ -555,11 +558,16 @@ function renderStats(animate){
   $("chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
     <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--acc)" stop-opacity=".38"/><stop offset="1" stop-color="var(--acc)" stop-opacity="0"/></linearGradient></defs>
     <path class="ar" d="${line} L${W},${H} L0,${H}Z" fill="url(#ga)" ${animate?"":'style="animation:none;opacity:1"'}/>
-    <line class="guide" x1="${sel[0]}" y1="${sel[1]}" x2="${sel[0]}" y2="${H}"/>
+    <line class="guide" id="gLine" x1="${sel[0]}" y1="${sel[1]}" x2="${sel[0]}" y2="${H}"/>
     <path class="ln ${animate?"draw":""}" id="lnPath" d="${line}"/>
-    <circle class="pt" cx="${sel[0]}" cy="${sel[1]}" r="6.5"/>
-  </svg><div class="tip" id="tip" style="left:${sel[0]/W*100}%;top:${(sel[1]-14)/H*100}%">${pairs(pts[state.statSel].lessons.length)}</div>`;
-  if (animate){ const p=$("lnPath"); const len=Math.ceil(p.getTotalLength()); p.style.setProperty("--len", len); }
+    <circle class="pt" id="gPt" cx="${sel[0]}" cy="${sel[1]}" r="6.5"/>
+  </svg><div class="tip" id="tip" style="left:${sel[0]/W*100}%;top:${(sel[1]-14)/H*100}%"><span>${pairs(pts[state.statSel].lessons.length)}</span></div>`;
+  const p=$("lnPath"), len=p.getTotalLength();
+  if (animate) p.style.setProperty("--len", Math.ceil(len));
+  // точки кривой — чтобы бегунок при смене дня ехал прямо по линии
+  const samples=[]; for (let l=0;l<=len;l+=2){ const q=p.getPointAtLength(l); samples.push([q.x,q.y]); }
+  if (chartGeo) cancelAnimationFrame(chartGeo.raf);
+  chartGeo = {W, H, xy, pts, samples, cur:sel[0], raf:0};
   $("xl").style.gridTemplateColumns = `repeat(${pts.length},1fr)`;
   $("xl").innerHTML = pts.map((p,i) => `<button class="${i===state.statSel?"on":""}" data-s="${i}">${p.label}</button>`).join("");
   // предметы
@@ -572,7 +580,38 @@ function renderStats(animate){
     return `<div class="cat" style="--i:${i};--c:${col}"><div class="ic">${k.trim()[0]}</div><div class="tx"><b>${esc(k)}</b><span>${pct}% нагрузки</span><div class="bar"><i style="width:${pct}%"></i></div></div><div class="rt">${v.n}</div></div>`; }).join("")
     : (stateEmpty() || `<div class="empty"><span class="e">📊</span>За этот период пар нет</div>`);
 }
-$("xl").onclick = e => { const b=e.target.closest("[data-s]"); if (!b) return; state.statSel=+b.dataset.s; renderStats(false); };
+let chartGeo = null;
+function curveY(x){
+  const s=chartGeo.samples; let lo=0, hi=s.length-1;
+  while (hi-lo>1){ const m=(lo+hi)>>1; if (s[m][0]<x) lo=m; else hi=m; }
+  const a=s[lo], b=s[hi], t=b[0]===a[0]?0:(x-a[0])/(b[0]-a[0]);
+  return a[1]+(b[1]-a[1])*Math.max(0,Math.min(1,t));
+}
+function placeSel(x,y){
+  const g=chartGeo, pt=$("gPt"), gl=$("gLine"), tip=$("tip"); if (!pt) return;
+  pt.setAttribute("cx",x); pt.setAttribute("cy",y);
+  gl.setAttribute("x1",x); gl.setAttribute("x2",x); gl.setAttribute("y1",y);
+  tip.style.left = x/g.W*100+"%"; tip.style.top = (y-14)/g.H*100+"%";
+}
+function moveSel(i){
+  const g=chartGeo; if (!g || i===state.statSel) return;
+  state.statSel=i;
+  $("xl").querySelectorAll("[data-s]").forEach(b => b.classList.toggle("on", +b.dataset.s===i));
+  $("tip").innerHTML = `<span class="sw">${pairs(g.pts[i].lessons.length)}</span>`;
+  cancelAnimationFrame(g.raf);
+  const from=g.cur, to=g.xy[i][0], t0=performance.now(), dur=Math.min(700, 380+Math.abs(to-from)*1.2);
+  if (document.hidden){ g.cur=to; placeSel(to, g.xy[i][1]); return; }
+  const ease = k => k<.5 ? 4*k*k*k : 1-Math.pow(-2*k+2,3)/2;
+  const step = now => {
+    const k=Math.min(1,(now-t0)/dur), x=from+(to-from)*ease(k);
+    g.cur=x; placeSel(x, k===1 ? g.xy[i][1] : curveY(x));
+    if (k<1) g.raf=requestAnimationFrame(step);
+  };
+  g.raf=requestAnimationFrame(step);
+}
+$("xl").onclick = e => { const b=e.target.closest("[data-s]"); if (b) moveSel(+b.dataset.s); };
+// нажатие прямо по графику выбирает ближайший день
+$("chart").onclick = e => { if (!chartGeo) return; const r=$("chart").getBoundingClientRect(); const n=chartGeo.pts.length; moveSel(Math.max(0,Math.min(n-1,Math.floor((e.clientX-r.left)/r.width*n)))); };
 $("statSeg").onclick = e => { const b=e.target.closest("[data-m]"); if (!b || b.dataset.m===state.statMode) return; state.statMode=b.dataset.m; state.statOff=0; state.statSel=null; segPill(); renderStats(true); };
 $("prevS").onclick = () => { state.statOff--; state.statSel=null; renderStats(true); };
 $("nextS").onclick = () => { state.statOff++; state.statSel=null; renderStats(true); };
