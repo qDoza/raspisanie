@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <title>Расписание ПВГУС</title>
@@ -42,7 +42,8 @@
   --shadow:0 10px 30px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
+html,body{margin:0;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,input,.row,.seg,.tabs,.fab{touch-action:manipulation}
 html{background:#000}
 body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;min-height:100vh;min-height:100dvh}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer}
@@ -571,6 +572,10 @@ document.addEventListener("click", async e => { if (e.target.id==="inst" && defe
 const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone && !store.get("iosHint")){ setTimeout(() => toast("Поделиться → «На экран Домой», чтобы установить", 6000), 1500); store.set("iosHint","1"); }
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+// ---------- без масштабирования (iOS игнорирует user-scalable=no) ----------
+["gesturestart","gesturechange","gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive:false}));
+document.addEventListener("touchmove", e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, {passive:false});
 
 // ---------- ключ доступа ----------
 async function keyHash(k){
