@@ -152,7 +152,7 @@ body.sheet-open #app{transform:scale(.93) translateY(calc(env(safe-area-inset-to
 .chart .guide{stroke:var(--t3);stroke-width:1.4;stroke-dasharray:4 5}
 .chart .pt{fill:var(--bg);stroke:var(--t);stroke-width:3}
 .tip{position:absolute;transform:translate(-50%,-100%);padding:6px 11px;border-radius:12px;background:var(--acc);color:var(--on-acc);font-size:13px;font-weight:800;white-space:nowrap;pointer-events:none;will-change:left,top}
-.tip span{display:inline-block}
+.tip span{display:block;line-height:18px;height:18px}
 .tip span.sw{animation:tipSw .35s var(--ease)}
 @keyframes tipSw{from{opacity:0;transform:translateY(5px) scale(.9)}}
 .tip::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:var(--acc);transform:translateX(-50%) rotate(45deg);border-radius:2px}
@@ -539,10 +539,13 @@ function statSeries(){
     return {pts, title: state.statOff===0 ? "Пар за эту неделю" : `Пар за ${ws.getDate()}–${we.getDate()} ${MONTHS[we.getMonth()]}`, selDefault: state.statOff===0 ? Math.min((t.getDay()+6)%7,5) : 0};
   }
   const base = new Date(t.getFullYear(), t.getMonth()+state.statOff, 1);
-  const pts = []; let ws = mondayOf(base);
-  while (ws.getMonth()===base.getMonth() || addDays(ws,5).getMonth()===base.getMonth()){
-    if (addDays(ws,5) >= base){ const ls=[]; for (let i=0;i<6;i++){ const dt=addDays(ws,i); if (dt.getMonth()===base.getMonth()) ls.push(...lessonsOn(dt)); } pts.push({label:ws.getDate()+"."+String(ws.getMonth()+1).padStart(2,"0"), date:ws, lessons:ls}); }
-    ws = addDays(ws,7); if (pts.length>6) break;
+  const pts = [], end = new Date(base.getFullYear(), base.getMonth()+1, 1);
+  // все недели, в которых есть хотя бы один учебный день (пн–сб) этого месяца
+  for (let ws = mondayOf(base); ws < end && pts.length < 7; ws = addDays(ws,7)){
+    const days = [0,1,2,3,4,5].map(i => addDays(ws,i)).filter(dt => dt.getMonth()===base.getMonth() && dt.getFullYear()===base.getFullYear());
+    if (!days.length) continue;
+    const ls = []; days.forEach(dt => ls.push(...lessonsOn(dt)));
+    pts.push({label:days[0].getDate()+"."+String(days[0].getMonth()+1).padStart(2,"0"), date:ws, lessons:ls});
   }
   return {pts, title:"Пар за "+MONTHS_N[base.getMonth()].toLowerCase(), selDefault: state.statOff===0 ? pts.findIndex(p => t>=p.date && t<addDays(p.date,7)) : 0};
 }
