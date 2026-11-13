@@ -1,4 +1,4 @@
-# Скачивает расписание с lk.tolgas.ru и отправляет на GitHub.
+﻿# Скачивает расписание с lk.tolgas.ru и отправляет на GitHub.
 # Запускается Планировщиком Windows (задача «Расписание ПВГУС — обновление»).
 $ErrorActionPreference = "Continue"
 $repo = Split-Path -Parent $PSScriptRoot
