@@ -12,6 +12,11 @@ $env:PYTHONIOENCODING = "utf-8"
 Set-Location $repo
 Log "=== старт"
 
+# Прерванный прошлый запуск (перезагрузка, закрытое окно) мог оставить недописанные файлы data —
+# они всё равно скачаются заново, а git pull из-за них падает. Убираем их.
+git diff --quiet -- data
+if ($LASTEXITCODE -ne 0) { Log "сбрасываю незаконченные изменения data от прошлого запуска"; git checkout -q -- data }
+
 git pull -q --rebase origin main 2>&1 | ForEach-Object { Log "git: $_" }
 
 $out = & python -I scripts/fetch.py 2>&1
