@@ -485,7 +485,7 @@ a.r{color:inherit;text-decoration:none}
 
 <script src="access.js"></script>
 <script>
-const APP_VERSION = "v16"; // совпадает с VERSION в sw.js
+const APP_VERSION = "v17"; // совпадает с VERSION в sw.js
 // ===== данные =====
 const GROUPS = ["СПБС25","СПБС26","СПБУ26","СПБУз23","СПБУз24","СПБУз24с","СПБУз25","СПБУз25с","СПБУз26","СПБУз26с","СПД23","СПДГ231","СПДГ232","СПДГ24","СПДГ25","СПДГ26","СПДГ26с","СПИС231","СПИС232","СПИС241","СПИС242","СПИС24с","СПИС251","СПИС252","СПИС25с","СПИСоз22","СПИСоз23","СПИСоз23с","СПКС23","СПКС24","СПКС25","СПКС26","СПКТ26","СПНА26с","СПП24","СПП25","СПП25с","СПП26","СПП26с","СППз23","СППз25","СППз26","СППз26с","СППО261","СППО262","СППО263","СПСА23","СПСА24","СПСА25","СПСА26","СПСА26с","СПТР24","СПТР251","СПТР252","СПТР25с","СПТР261","СПТР262","СПТР26с","СПТРз23","СПТРз24с","СПУК24","СПУК25","СПУК26"];
 const BELLS = [["08:30","10:05"],["10:15","11:50"],["12:35","14:10"],["14:20","15:55"],["16:05","17:35"],["17:45","19:20"],["19:30","21:05"]];
@@ -521,7 +521,9 @@ let offlineShown = false;
 async function loadGroup(g){
   if (g in cache && cache[g]) return cache[g];
   let data = null, fromNet = false;
-  try { const r = await fetch("data/"+encodeURIComponent(g)+".json",{cache:"no-cache"}); if (r.ok){ data = await r.json(); fromNet = true; } } catch(e){}
+  // не ждём «висящую» сеть дольше 8 секунд — дальше показываем сохранённую копию
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 8000);
+  try { const r = await fetch("data/"+encodeURIComponent(g)+".json",{cache:"no-cache", signal:ctl.signal}); if (r.ok){ data = await r.json(); fromNet = true; } } catch(e){} finally { clearTimeout(tm); }
   const saved = (() => { try { return JSON.parse(store.get("data:"+g) || "null"); } catch(e){ return null; } })();
   if (data && (!saved || data.fetched !== saved.fetched)) store.set("data:"+g, JSON.stringify(data));
   if (!data && saved) data = saved;
